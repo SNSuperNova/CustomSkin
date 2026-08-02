@@ -1,0 +1,298 @@
+Configs: {
+	CustomSkinServerConfig: {
+		DisplayName: Custom Skin Server Config
+
+		AllowSkinUploads: {
+			Label: Allow Player Skin Uploads
+			Tooltip: When disabled, the server stops requesting new skin data. Already cached, non-banned skins remain available.
+		}
+
+		MaxUploadKiB: {
+			Label: Per-Skin Upload Limit (KiB)
+			Tooltip: Limits each normalized skin resource accepted by the server. The protocol hard limit is 800 KiB.
+		}
+
+		MaxCachedResources: {
+			Label: Maximum Cached Skin Count
+			Tooltip: Maximum number of different multiplayer skins kept during this server session.
+		}
+
+		MaxCachedResourceMiB: {
+			Label: Maximum Cache Size (MiB)
+			Tooltip: Total memory limit for multiplayer skin resources cached by the server.
+		}
+
+		UploadCooldownSeconds: {
+			Label: Per-Player Upload Request Cooldown (Seconds)
+			Tooltip: Limits how frequently the server requests skin data again from the same player.
+		}
+
+		BannedSkinHashes: {
+			Label: Banned Skin Hashes
+			Tooltip: Enter one 64-character SHA-256 hash per row. Matching skins are not uploaded, assigned, or served and disappear after applying the config.
+		}
+	}
+
+	SkinEnableMode: {
+		Always: {
+			$parentVal: Always
+			Tooltip: Always enables the selected local skin.
+		}
+
+		AccessoryOnly: {
+			$parentVal: Accessory Only
+			Tooltip: Enables the selected skin only while the Custom Skin Core is visible.
+		}
+
+		Disabled: {
+			$parentVal: Disabled
+			Tooltip: Disables the selected local skin.
+		}
+
+		Tooltip: Select when the local character skin is displayed.
+	}
+
+	CustomSkinClientConfig: {
+		DisplayName: Custom Skin Client Config
+
+		EnableMode: {
+			Label: Skin Enable Mode
+			Tooltip: Always use the selected skin, require a visible Custom Skin Core, or disable local skins.
+		}
+
+		ShowRemoteSkins: {
+			Label: Show Other Players' CustomSkins
+			Tooltip: When disabled, remote multiplayer skins are neither requested nor displayed. Your local skin is unaffected.
+		}
+
+		BlockedPlayerNames: {
+			Label: Hide Skins From Player Names
+			Tooltip: Matching names hide only that player's CustomSkin, not the player or chat. Matching ignores case; update the list if the player changes names.
+		}
+	}
+}
+
+Keybinds.OpenSkinManager.DisplayName: Open Skin Manager
+
+Commands: {
+	Description: Open the CustomSkin manager or reload multiplayer skins.
+	Usage: Usage: /cskin or /cskin reload
+}
+
+Network: {
+	ReloadStarted: Multiplayer skin resync requested. Remote appearances will return after validation.
+	ReloadUnavailable: /cskin reload can only be used after entering a multiplayer world.
+	ReloadHint: Use /cskin reload to resync manually.
+	ServerRejected: The server rejected a skin transfer or its validation failed.
+	UploadTimeout: Uploading the selected skin to the server timed out.
+	DownloadTimeout: Downloading another player's skin timed out.
+	LocalError: An error occurred while processing multiplayer skin data. Check the client log for details.
+}
+
+UI: {
+	ManagerTitle: CustomSkin Manager
+	ImportInbox: Import Inbox
+	ImportSkin: Import Skin
+	ImportSkinDialogTitle: Select a shared .cskin package
+	ImportSkinHint: Click Import Skin to select a shared .cskin file directly. A successfully imported skin is selected immediately.
+	ImportedSkin: Imported and selected: {0}
+	ImportedExistingSkin: This skin is already installed and is now selected: {0}
+	InstallExample: Install Example
+	OpenCreator: Create Skin
+	CreatorTitle: CustomSkin Creator
+	CreateTemplate: Create Template
+	OpenProjectFolder: Open Folder
+	RefreshAndUse: Refresh & Use
+	ExportPackage: Export Package
+	DeleteProject: Delete Project
+	OpenPixelEditor: Pixel Editor
+	PixelEditorTitle: CustomSkin Pixel Editor · {0}
+	EditorHint: Select a pose and component, then draw pixels on the composed character. Mouse wheel zooms; Ctrl+Z/Y undo/redo; Ctrl+S saves.
+	EditorPlayPause: Play/Pause
+	EditorGender: Body Type
+	EditorSynchronizedBody: Unisex Sync
+	EditorSynchronizedBodyHint: Torso and shoulder edits are written to both character-gender slots; separate gender textures are not required.
+	EditorMirror: Mirror
+	EditorOnlyPart: Solo Part
+	EditorGrid: Pixel Grid
+	EditorZoomHint: Scroll to zoom canvas
+	EditorUndo: Undo
+	EditorRedo: Redo
+	EditorSave: Save Project
+	EditorSaveUse: Save & Use
+	EditorReload: Reload Files
+	EditorSaved: Saved all three runtime PNGs and refreshed the project preview; the in-game character was not switched.
+	EditorSavedUsed: Saved safely and applied to the current character: {0}
+	EditorReloadDirty: Unsaved pixels are present. Save first, or return and confirm discard before reopening the editor.
+	EditorConfirmDiscard: Unsaved changes are present. Click Back again to discard them.
+	EditorFailed: Editor action failed. Code: {0}  Detail: {1}. The original project was not intentionally bypassed or downgraded.
+	EditorPose: Pose: {0} ({1}/{2}) · {3} · facing {4}
+	EditorPoseNoGender: Pose: {0} ({1}/{2}) · facing {3}
+	EditorSlots: Actual slots: Head {0} / Torso {1} / FrontArm {2} / BackArm {3} / Legs {4}
+	EditorAffected: Selected: {0} slot {1} · affects {2} poses: {3}
+	EditorColor: Current RGBA: {0}, {1}, {2}, {3}
+	EditorColorInputHint: R, G, B, A
+	EditorColorApply: Apply
+	EditorColorInputInvalid: Invalid color. Every R, G, B, and A field must contain a value from 0 to 255.
+	EditorColorInputApplied: RGBA values applied; the color enters Recent Colors after it is used to draw.
+	EditorHistory: Undo {0}/{1} strokes, about {2}/{3} KiB · zoom {4}x · {5}
+	EditorDirty: unsaved
+	EditorClean: saved
+	EditorReferenceFolder: Reference Folder
+	EditorReferenceImport: Import PNG
+	EditorReferenceDialogTitle: Select a static PNG reference image
+	EditorReferenceReload: Reload PNG
+	EditorReferenceVisible: Show Reference
+	EditorReferenceOpacityDown: Opacity −
+	EditorReferenceOpacityUp: Opacity +
+	EditorReferenceMirror: Mirror PNG
+	EditorReferenceReset: Reset Position
+	EditorReferenceMoveHint: Move reference: Arrow keys = 1 px · Shift+Arrow keys = 5 px (hold to repeat)
+	EditorReferenceOverlay: Overlay on Part
+	EditorReferenceReplace: Replace Part
+	EditorReferenceFolderOpened: Reference folder opened. Place a static PNG named {0} there, then click Reload PNG.
+	EditorReferenceLoaded: Reference PNG loaded: {0}x{1} pixels.
+	EditorReferenceMissing: No {0} was found. Open the Reference Folder, add the static PNG, then reload it.
+	EditorReferencePauseRequired: Pause the animation before overlaying or replacing pixels so the target frame is fixed.
+	EditorReferenceShowRequired: Show the reference image in the current pose before overlaying or replacing pixels.
+	EditorReferenceReplaced: Replaced {0} in {1} from the visible reference area; its atlas slot is shared by {2} mapped poses. The reference layer was hidden so the canvas now shows committed pixels.
+	EditorReferenceOverlaid: Overlaid non-transparent reference pixels onto {0} in {1}; its atlas slot is shared by {2} mapped poses. The reference layer was hidden so the canvas now shows committed pixels.
+	EditorReferenceNoPixels: The operation made no pixel changes in the selected part.
+	EditorReferenceNone: Reference: none · expected file: {0}
+	EditorReferenceState: Reference layer (preview only): {0}x{1} · offset {2},{3} · opacity {4}/255 · {5}
+	EditorReferenceMirrored: mirrored
+	EditorReferenceNormal: normal
+	EditorMale: male body
+	EditorFemale: female body
+	EditorLeft: left
+	EditorRight: right
+
+	EditorParts: {
+		Head: Head
+		Torso: Torso
+		FrontShoulder: Front Shoulder
+		FrontArm: Front Arm
+		BackShoulder: Back Shoulder
+		BackArm: Back Arm
+		Legs: Legs
+	}
+
+	EditorTools: {
+		Pencil: Pencil
+		Eraser: Eraser
+		Eyedropper: Eyedropper
+	}
+
+	EditorPoses: {
+		Idle: Idle
+		BodyAction: Body Action {0}
+		JumpAir: Jump/Air {0}
+		GroundMove: Ground Move {0}
+		WeaponArm: Weapon Arm {0}
+		NativeLegs: Native Special/Transition Legs {0}
+	}
+
+	EditorStates: {
+		Idle: Idle
+		BodyAction: Body Action
+		JumpAir: Jump/Air
+		GroundMove: Ground Move
+		WeaponArm: Weapon Arm
+		NativeSpecial: Native Special Legs
+	}
+
+	CreatorHint: Create Template generates and opens an editable folder here: {0}
+	NoCreatorProjects: No creator projects yet. Click Create Template to begin; Python and external agents are not required.
+	NoCreatorProjectSelected: Create or select a skin creator project first.
+	ProjectNotLoaded: Not imported
+	ProjectLoaded: Imported
+	ProjectHasError: Needs repair
+	CreatorProjectDetails:
+		'''
+		Creator project: {0}
+		Folder: {1}
+		Last imported revision: {2}
+		'''
+	TemplateCreated: Template created and folder opened: {0}
+	TemplateDefaultName: New Skin {0}
+	TemplateDefaultAuthor: Player
+	TemplateDefaultDescription: Created with the in-game CustomSkin template.
+	ProjectFolderOpened: Creator folder opened: {0}
+	ProjectRefreshed: Images reloaded and applied to the current character: {0}
+	ProjectExported: Sharing package exported and export folder opened: {0}
+	ConfirmDeleteProject: Click Delete Project again to move “{0}” to the recoverable CreatorTrash folder. Its installed library copy will not be deleted.
+	ProjectDeleted: Creator project “{0}” was moved to CreatorTrash: {1}. Its installed skin remains available in the skin manager.
+	ProjectFailed:
+		'''
+		Action failed. Code: {0}  Detail: {1}
+		Suggestion: {2}
+		'''
+	ViewTrash: View Trash
+	ViewLibrary: Back to Library
+	ClearSelection: Clear Selection
+	SelectionCleared: Skin selection cleared.
+	InboxHint: Place .cskin files in: {0}
+	NoSelection: Selected skin: none
+	CharacterSelectionScope: Character: {0} (skin selection is saved per character)
+	SelectedDetails:
+		'''
+		Selected: {0}
+		Author: {1}
+		Version: {2}
+		Hash: {3}
+		'''
+	TextureDiagnostics: Runtime textures: {0} live / {1} created / {2} disposed
+	EmptyLibrary: The local skin library is empty. Install the example or place a .cskin file in the Inbox.
+	EmptyTrash: Trash is empty. There are no recoverable skins.
+	TrashHint: Trash folder: {0}. Restore returns a skin to the library; permanent deletion cannot be undone.
+	Delete: Delete
+	Restore: Restore
+	PermanentDelete: Delete Forever
+	Selected: Selected skin: {0}
+	ConfirmDelete: Click Delete again to move “{0}” to the recoverable Trash folder.
+	Deleted: Removed from library: {0}
+	Restored: Restored to library: {0}
+	ConfirmPermanentDelete: Click Delete Forever again to permanently remove “{0}”. This cannot be undone.
+	PermanentlyDeleted: Permanently deleted: {0}
+	NoPackages: No .cskin packages were found in {0}
+	ImportFailed:
+		'''
+		Import failed: {0}
+		Location/code: {1}  Detail: {2}
+		Suggested action: {3}
+		'''
+
+	ImportHints: {
+		Package: Rebuild the package with create-customskin export; do not manually add, remove, or rename files inside it.
+		Manifest: Fix the indicated manifest.json field, or export again from a standard authoring project.
+		Image: Re-export the indicated file using the required dimensions and non-interlaced 8-bit RGBA PNG format.
+		License: Save LICENSE.txt as valid UTF-8 under 64 KiB, or omit it because a license file is optional.
+		Creator: Restore the required template filenames and folders, save the PNG files, then click Refresh & Use again.
+		Repository: Confirm that the skin still exists in the library and import again; retain the error code if it persists.
+		Unknown: Retain the error code and detail when reporting the problem; do not bypass validation by deleting required files.
+	}
+
+	ImportSummary: Import complete: {0} new, {1} already installed.
+	ExampleReady: The bundled example was imported and selected.
+	OperationFailed: Operation failed. Code: {0}  Detail: {1}
+}
+
+Errors: {
+	Package: The skin package structure or file set is invalid.
+	Manifest: The skin manifest contains a missing, unsupported, or invalid field.
+	Image: A skin image has an invalid format, size, structure, or checksum.
+	License: The optional license text has an invalid encoding, character, or size.
+	Project: The creator project is missing a required file or cannot be accessed safely.
+	Repository: The installed skin library entry is missing, damaged, or conflicts with an existing entry.
+	Selection: The saved character skin selection is invalid or no longer available.
+	Editor: The pixel editor could not safely complete the requested operation.
+	Network: Multiplayer skin data is invalid or exceeds an allowed limit.
+	Unknown: An unexpected error occurred. Check the client log and retain the displayed error code.
+}
+
+Items: {
+	CustomSkinCore: {
+		DisplayName: Custom Skin Core
+		Tooltip: Enables the selected skin when Accessory Only mode is active.
+	}
+}

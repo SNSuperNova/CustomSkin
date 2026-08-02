@@ -1,0 +1,298 @@
+Configs: {
+	CustomSkinServerConfig: {
+		DisplayName: 自定义皮肤服务器配置
+
+		AllowSkinUploads: {
+			Label: 允许玩家上传皮肤
+			Tooltip: 关闭后服务器不会向玩家请求新的皮肤数据；已经缓存且未封禁的皮肤仍可继续显示。
+		}
+
+		MaxUploadKiB: {
+			Label: 单个皮肤上传上限（KiB）
+			Tooltip: 限制服务器接受的单个标准化皮肤资源大小。协议自身的硬上限为 800 KiB。
+		}
+
+		MaxCachedResources: {
+			Label: 最大缓存皮肤数量
+			Tooltip: 服务器本次运行期间可保留的不同联机皮肤数量。
+		}
+
+		MaxCachedResourceMiB: {
+			Label: 最大缓存总量（MiB）
+			Tooltip: 服务器内存中联机皮肤资源的总容量上限。
+		}
+
+		UploadCooldownSeconds: {
+			Label: 同一玩家上传请求冷却（秒）
+			Tooltip: 限制服务器向同一玩家重复请求皮肤数据的频率。
+		}
+
+		BannedSkinHashes: {
+			Label: 封禁的皮肤哈希
+			Tooltip: 每行填写一个 64 位 SHA-256 哈希。匹配的皮肤不会上传、分配或下发；修改配置后会立即停止显示。
+		}
+	}
+
+	SkinEnableMode: {
+		Always: {
+			$parentVal: 始终启用
+			Tooltip: 始终显示当前角色选择的本地皮肤。
+		}
+
+		AccessoryOnly: {
+			$parentVal: 仅显示饰品时启用
+			Tooltip: 只有在显示“自定义外观核心”时才启用当前皮肤。
+		}
+
+		Disabled: {
+			$parentVal: 禁用
+			Tooltip: 不显示当前角色选择的本地皮肤。
+		}
+
+		Tooltip: 选择何时显示本地角色皮肤。
+	}
+
+	CustomSkinClientConfig: {
+		DisplayName: 自定义皮肤客户端配置
+
+		EnableMode: {
+			Label: 皮肤启用方式
+			Tooltip: 可选择始终使用当前皮肤、仅在显示自定义外观核心时启用，或关闭本地皮肤。
+		}
+
+		ShowRemoteSkins: {
+			Label: 显示其他玩家的 CustomSkin
+			Tooltip: 关闭后不再请求或显示联机玩家的远端皮肤；本地皮肤不受影响。
+		}
+
+		BlockedPlayerNames: {
+			Label: 屏蔽皮肤的玩家名称
+			Tooltip: 名称匹配时只隐藏该玩家的 CustomSkin，不屏蔽玩家或聊天。名称不区分大小写；玩家改名后需要更新列表。
+		}
+	}
+}
+
+Keybinds.OpenSkinManager.DisplayName: 打开皮肤管理器
+
+Commands: {
+	Description: 打开 CustomSkin 管理器，或重新同步联机皮肤。
+	Usage: 用法：/cskin 或 /cskin reload
+}
+
+Network: {
+	ReloadStarted: 已请求重新同步联机皮肤；远端外观会在校验完成后恢复。
+	ReloadUnavailable: 只能在进入联机世界并完成加载后使用 /cskin reload。
+	ReloadHint: 可输入 /cskin reload 手动重新同步。
+	ServerRejected: 服务器拒绝了皮肤传输或皮肤数据校验失败。
+	UploadTimeout: 向服务器上传当前皮肤时超时。
+	DownloadTimeout: 获取其他玩家的皮肤时超时。
+	LocalError: 处理联机皮肤数据时发生异常，详情请查看客户端日志。
+}
+
+UI: {
+	ManagerTitle: CustomSkin 皮肤管理器
+	ImportInbox: 导入收件箱
+	ImportSkin: 导入皮肤
+	ImportSkinDialogTitle: 选择共享的 .cskin 皮肤包
+	ImportSkinHint: 点击“导入皮肤”可直接选择他人共享的 .cskin 文件；导入成功后会立即选择该皮肤。
+	ImportedSkin: 已导入并选择皮肤：{0}
+	ImportedExistingSkin: 该皮肤已在本地，现已选择：{0}
+	InstallExample: 安装内置示例
+	OpenCreator: 制作皮肤
+	CreatorTitle: CustomSkin 皮肤制作
+	CreateTemplate: 创建模板
+	OpenProjectFolder: 打开目录
+	RefreshAndUse: 刷新并使用
+	ExportPackage: 导出分享包
+	DeleteProject: 删除工程
+	OpenPixelEditor: 游戏内画板
+	PixelEditorTitle: CustomSkin 像素画板 · {0}
+	EditorHint: 在完整人物预览中选择动作和部件后逐像素绘制。滚轮缩放；Ctrl+Z/Y 撤销/重做；Ctrl+S 保存。
+	EditorPlayPause: 播放/暂停
+	EditorGender: 男/女躯干
+	EditorSynchronizedBody: 男女同步
+	EditorSynchronizedBodyHint: 躯干和肩部修改会同步写入男女角色对应格；无需分别制作两套性别贴图。
+	EditorMirror: 左右镜像
+	EditorOnlyPart: 仅看部位
+	EditorGrid: 像素网格
+	EditorZoomHint: 滚轮缩放画布
+	EditorUndo: 撤销
+	EditorRedo: 重做
+	EditorSave: 保存工程
+	EditorSaveUse: 保存并使用
+	EditorReload: 重新读取
+	EditorSaved: 已保存三张运行时 PNG 并刷新工程预览；游戏角色未切换。
+	EditorSavedUsed: 已安全保存并应用到当前角色：{0}
+	EditorReloadDirty: 当前有未保存像素。请先保存，或返回并确认放弃后再重新进入画板。
+	EditorConfirmDiscard: 有未保存修改。再次点击“返回”将放弃这些修改。
+	EditorFailed: 画板操作失败。代码：{0}　详情：{1}。原工程文件未被故意绕过或降级处理。
+	EditorPose: 动作：{0}（{1}/{2}） · {3} · 朝{4}
+	EditorPoseNoGender: 动作：{0}（{1}/{2}） · 朝{3}
+	EditorSlots: 实际格号：Head {0} / Torso {1} / FrontArm {2} / BackArm {3} / Legs {4}
+	EditorAffected: 当前部件：{0} 格 {1} · 影响 {2} 个动作：{3}
+	EditorColor: 当前 RGBA：{0}, {1}, {2}, {3}
+	EditorColorInputHint: R, G, B, A
+	EditorColorApply: 应用
+	EditorColorInputInvalid: 颜色格式无效。R、G、B、A 每格都必须是 0–255 的数值。
+	EditorColorInputApplied: 已应用 RGBA 数值；完成绘制后才会记入最近使用颜色。
+	EditorHistory: 撤销 {0}/{1} 笔，约 {2}/{3} KiB · 缩放 {4}x · {5}
+	EditorDirty: 未保存
+	EditorClean: 已保存
+	EditorReferenceFolder: 参考图目录
+	EditorReferenceImport: 导入参考图
+	EditorReferenceDialogTitle: 选择静态 PNG 参考图
+	EditorReferenceReload: 重新载入
+	EditorReferenceVisible: 显示参考图
+	EditorReferenceOpacityDown: 透明度 −
+	EditorReferenceOpacityUp: 透明度 +
+	EditorReferenceMirror: 镜像参考图
+	EditorReferenceReset: 重置位置
+	EditorReferenceMoveHint: 移动参考图：方向键 1 像素 · Shift+方向键 5 像素（可按住连续移动）
+	EditorReferenceOverlay: 叠加到当前部位
+	EditorReferenceReplace: 替换当前部位
+	EditorReferenceFolderOpened: 已打开参考图目录。请将静态 PNG 命名为 {0} 放入其中，然后点击“重新载入”。
+	EditorReferenceLoaded: 已载入参考图：{0}×{1} 像素。
+	EditorReferenceMissing: 未找到 {0}。请打开参考图目录，放入静态 PNG 后重新载入。
+	EditorReferencePauseRequired: 请先暂停动画并固定当前帧，再叠加或替换像素。
+	EditorReferenceShowRequired: 请先在当前动作帧显示参考图，再叠加或替换像素。
+	EditorReferenceReplaced: 已使用参考图可见区域替换“{1}”中的“{0}”；该图集格由 {2} 个动作共用。参考层已自动隐藏，画布现在显示正式像素。
+	EditorReferenceOverlaid: 已将参考图非透明像素叠加到“{1}”中的“{0}”；该图集格由 {2} 个动作共用。参考层已自动隐藏，画布现在显示正式像素。
+	EditorReferenceNoPixels: 本次操作没有改变当前选中部位的像素。
+	EditorReferenceNone: 参考图：无 · 等待文件：{0}
+	EditorReferenceState: 参考层（仅预览）：{0}×{1} · 偏移 {2},{3} · 透明度 {4}/255 · {5}
+	EditorReferenceMirrored: 已镜像
+	EditorReferenceNormal: 原始方向
+	EditorMale: 男性躯干
+	EditorFemale: 女性躯干
+	EditorLeft: 左
+	EditorRight: 右
+
+	EditorParts: {
+		Head: 头部
+		Torso: 躯干
+		FrontShoulder: 前肩
+		FrontArm: 前臂
+		BackShoulder: 后肩
+		BackArm: 后臂
+		Legs: 腿部
+	}
+
+	EditorTools: {
+		Pencil: 铅笔
+		Eraser: 橡皮
+		Eyedropper: 吸管
+	}
+
+	EditorPoses: {
+		Idle: 待机
+		BodyAction: 身体动作 {0}
+		JumpAir: 跳跃/空中 {0}
+		GroundMove: 地面移动 {0}
+		WeaponArm: 武器手臂 {0}
+		NativeLegs: 原生特殊/过渡腿 {0}
+	}
+
+	EditorStates: {
+		Idle: 待机
+		BodyAction: 身体动作
+		JumpAir: 跳跃/空中
+		GroundMove: 地面移动
+		WeaponArm: 武器手臂
+		NativeSpecial: 原生特殊腿
+	}
+
+	CreatorHint: 点击“创建模板”会生成并打开可编辑目录：{0}
+	NoCreatorProjects: 还没有制作工程。点击“创建模板”即可开始，不需要安装 Python 或其他工具。
+	NoCreatorProjectSelected: 请先创建或选择一个皮肤制作工程。
+	ProjectNotLoaded: 尚未导入
+	ProjectLoaded: 已导入
+	ProjectHasError: 需要修复
+	CreatorProjectDetails:
+		'''
+		制作工程：{0}
+		目录：{1}
+		最近导入：{2}
+		'''
+	TemplateCreated: 已创建模板并打开目录：{0}
+	TemplateDefaultName: 新皮肤 {0}
+	TemplateDefaultAuthor: 玩家
+	TemplateDefaultDescription: 使用 CustomSkin 游戏内模板创建。
+	ProjectFolderOpened: 已打开制作目录：{0}
+	ProjectRefreshed: 已重新读取图片并应用到当前角色：{0}
+	ProjectExported: 已导出分享包并打开导出目录：{0}
+	ConfirmDeleteProject: 再次点击“删除工程”，将“{0}”移动到可恢复的制作工程垃圾桶；已经导入皮肤库的副本不会删除。
+	ProjectDeleted: 已将制作工程“{0}”移动到制作工程垃圾桶：{1}。已经导入的皮肤仍可在皮肤管理器中使用或删除。
+	ProjectFailed:
+		'''
+		处理失败。代码：{0}　详情：{1}
+		建议：{2}
+		'''
+	ViewTrash: 查看垃圾桶
+	ViewLibrary: 返回皮肤库
+	ClearSelection: 取消选择
+	SelectionCleared: 已取消当前皮肤。
+	InboxHint: 请把 .cskin 文件放入：{0}
+	NoSelection: 当前皮肤：无
+	CharacterSelectionScope: 当前角色：{0}（皮肤选择随角色存档保存）
+	SelectedDetails:
+		'''
+		当前皮肤：{0}
+		作者：{1}
+		版本：{2}
+		哈希：{3}
+		'''
+	TextureDiagnostics: 运行时纹理：存活 {0} / 已创建 {1} / 已释放 {2}
+	EmptyLibrary: 本地皮肤库为空。可以安装内置示例，或把 .cskin 文件放入收件箱。
+	EmptyTrash: 垃圾桶为空，没有可恢复的皮肤。
+	TrashHint: 垃圾桶目录：{0}。恢复会把皮肤放回皮肤库；永久删除无法撤销。
+	Delete: 删除
+	Restore: 恢复
+	PermanentDelete: 永久删除
+	Selected: 已选择皮肤：{0}
+	ConfirmDelete: 再次点击删除，将“{0}”移动到可恢复的垃圾桶。
+	Deleted: 已从皮肤库移除并放入垃圾桶：{0}
+	Restored: 已恢复到皮肤库：{0}
+	ConfirmPermanentDelete: 再次点击永久删除，将彻底移除“{0}”；此操作无法撤销。
+	PermanentlyDeleted: 已永久删除：{0}
+	NoPackages: 在 {0} 中没有找到 .cskin 文件。
+	ImportFailed:
+		'''
+		导入失败：{0}
+		错误位置/代码：{1}　详情：{2}
+		处理建议：{3}
+		'''
+
+	ImportHints: {
+		Package: 请使用 create-customskin 的 export 重新打包，不要手工增删或重命名压缩包内文件。
+		Manifest: 请修复 manifest.json 中指出的字段，或从标准皮肤工程重新执行 export。
+		Image: 请按详情中的文件路径、像素尺寸和“非交错 8 位 RGBA PNG”要求重新导出图片。
+		License: 请将 LICENSE.txt 保存为有效 UTF-8 文本并控制在 64 KiB 内；许可证文件不是必需项。
+		Creator: 请恢复模板中的必需文件名和目录结构；保存 PNG 后再点击“刷新并使用”。
+		Repository: 请确认皮肤仍在库中并重新导入；如果持续失败，请保留错误代码反馈。
+		Unknown: 请保留错误代码和详情反馈；不要通过删除文件或关闭校验来绕过错误。
+	}
+
+	ImportSummary: 导入完成：新增 {0} 个，已有 {1} 个。
+	ExampleReady: 已导入并选择内置示例皮肤。
+	OperationFailed: 操作失败。代码：{0}　详情：{1}
+}
+
+Errors: {
+	Package: 皮肤包的结构或文件集不符合规范。
+	Manifest: 皮肤清单存在缺失、不支持或无效的字段。
+	Image: 皮肤图片的格式、尺寸、结构或校验和无效。
+	License: 可选许可证文本的编码、字符或大小无效。
+	Project: 制作工程缺少必需文件，或无法安全访问。
+	Repository: 已安装皮肤库条目丢失、损坏，或与现有条目冲突。
+	Selection: 角色保存的皮肤选择无效或已不可用。
+	Editor: 像素画板无法安全完成请求的操作。
+	Network: 联机皮肤数据无效或超出允许上限。
+	Unknown: 发生未预期异常。请查看客户端日志，并保留界面显示的错误代码。
+}
+
+Items: {
+	CustomSkinCore: {
+		DisplayName: 自定义外观核心
+		Tooltip: 当启用方式设为“仅饰品”时，显示该饰品即可启用当前皮肤。
+	}
+}

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Include="..\..\Common\Skins\SkinPackageException.cs" Link="SkinPackageException.cs" />
+		<Compile Include="..\..\Common\Skins\SkinManifest.cs" Link="SkinManifest.cs" />
+		<Compile Include="..\..\Common\Skins\SkinManifestValidator.cs" Link="SkinManifestValidator.cs" />
+		<Compile Include="..\..\Common\Skins\PngInspector.cs" Link="PngInspector.cs" />
+		<Compile Include="..\..\Common\Skins\SkinPackageImporter.cs" Link="SkinPackageImporter.cs" />
+		<Compile Include="..\..\Common\Skins\SkinProjectPackage.cs" Link="SkinProjectPackage.cs" />
+		<Compile Include="..\..\Common\Skins\SkinContentHasher.cs" Link="SkinContentHasher.cs" />
+		<Compile Include="..\..\Common\Skins\SkinTextNormalizer.cs" Link="SkinTextNormalizer.cs" />
+		<Compile Include="..\..\Common\Skins\SkinImportErrorPresentation.cs" Link="SkinImportErrorPresentation.cs" />
+		<Compile Include="..\..\Common\Skins\SkinEditorDocument.cs" Link="SkinEditorDocument.cs" />
+		<Compile Include="..\..\Common\Networking\ChunkTransfer.cs" Link="ChunkTransfer.cs" />
+		<Compile Include="..\..\Common\Networking\SkinNetworkResource.cs" Link="SkinNetworkResource.cs" />
+		<Compile Include="..\..\Common\Networking\RemoteSkinPrivacyPolicy.cs" Link="RemoteSkinPrivacyPolicy.cs" />
+		<Compile Include="..\..\Common\Networking\SkinNetworkPolicy.cs" Link="SkinNetworkPolicy.cs" />
+	</ItemGroup>
+</Project>

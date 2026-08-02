@@ -1,0 +1,1 @@
+Import, create, and preview data-only humanoid skins while preserving Terraria's native animation and weapon rendering. Includes a static-PNG reference overlay for tracing and selected-part editing.

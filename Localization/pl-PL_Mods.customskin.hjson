@@ -1,0 +1,298 @@
+Configs: {
+	CustomSkinServerConfig: {
+		DisplayName: Ustawienia serwera CustomSkin
+
+		AllowSkinUploads: {
+			Label: Zezwalaj graczom na wysyłanie skórek
+			Tooltip: Po wyłączeniu serwer przestaje żądać nowych danych skórek. Skórki już zapisane w pamięci podręcznej i niezablokowane pozostają dostępne.
+		}
+
+		MaxUploadKiB: {
+			Label: Limit wysyłania jednej skórki (KiB)
+			Tooltip: Ogranicza każdy znormalizowany zasób skórki przyjmowany przez serwer. Twardy limit protokołu wynosi 800 KiB.
+		}
+
+		MaxCachedResources: {
+			Label: Maksymalna liczba skórek w pamięci
+			Tooltip: Maksymalna liczba różnych skórek wieloosobowych przechowywanych podczas tej sesji serwera.
+		}
+
+		MaxCachedResourceMiB: {
+			Label: Maksymalny rozmiar pamięci podręcznej (MiB)
+			Tooltip: Łączny limit pamięci zasobów skórek wieloosobowych przechowywanych przez serwer.
+		}
+
+		UploadCooldownSeconds: {
+			Label: Odstęp żądań wysyłania gracza (sekundy)
+			Tooltip: Ogranicza częstotliwość ponownego żądania danych skórki od tego samego gracza.
+		}
+
+		BannedSkinHashes: {
+			Label: Skróty zablokowanych skórek
+			Tooltip: Wpisz jeden 64-znakowy skrót SHA-256 w każdym wierszu. Pasujące skórki nie są wysyłane, przypisywane ani udostępniane i znikają po zastosowaniu ustawień.
+		}
+	}
+
+	SkinEnableMode: {
+		Always: {
+			$parentVal: Zawsze
+			Tooltip: Zawsze włącza wybraną lokalną skórkę.
+		}
+
+		AccessoryOnly: {
+			$parentVal: Tylko akcesorium
+			Tooltip: Włącza wybraną skórkę tylko wtedy, gdy Custom Skin Core jest widoczny.
+		}
+
+		Disabled: {
+			$parentVal: Wyłączone
+			Tooltip: Wyłącza wybraną lokalną skórkę.
+		}
+
+		Tooltip: Wybierz, kiedy ma być wyświetlana lokalna skórka postaci.
+	}
+
+	CustomSkinClientConfig: {
+		DisplayName: Ustawienia klienta CustomSkin
+
+		EnableMode: {
+			Label: Tryb włączenia skórki
+			Tooltip: Zawsze używaj wybranej skórki, wymagaj widocznego Custom Skin Core lub wyłącz lokalne skórki.
+		}
+
+		ShowRemoteSkins: {
+			Label: Pokazuj CustomSkin innych graczy
+			Tooltip: Po wyłączeniu zdalne skórki wieloosobowe nie są żądane ani wyświetlane. Lokalna skórka pozostaje bez zmian.
+		}
+
+		BlockedPlayerNames: {
+			Label: Ukrywaj skórki według nazw graczy
+			Tooltip: Pasujące nazwy ukrywają tylko CustomSkin gracza, a nie gracza ani czat. Wielkość liter jest ignorowana; zaktualizuj listę, jeśli gracz zmieni nazwę.
+		}
+	}
+}
+
+Keybinds.OpenSkinManager.DisplayName: Otwórz menedżer skórek
+
+Commands: {
+	Description: Otwiera menedżer CustomSkin lub ponownie wczytuje skórki wieloosobowe.
+	Usage: Użycie: /cskin lub /cskin reload
+}
+
+Network: {
+	ReloadStarted: Zażądano ponownej synchronizacji skórek wieloosobowych. Zdalny wygląd wróci po weryfikacji.
+	ReloadUnavailable: /cskin reload można użyć dopiero po wejściu do świata wieloosobowego.
+	ReloadHint: Użyj /cskin reload, aby zsynchronizować ręcznie.
+	ServerRejected: Serwer odrzucił przesyłanie skórki lub jej weryfikacja nie powiodła się.
+	UploadTimeout: Upłynął limit czasu wysyłania wybranej skórki na serwer.
+	DownloadTimeout: Upłynął limit czasu pobierania skórki innego gracza.
+	LocalError: Podczas przetwarzania danych skórki wieloosobowej wystąpił błąd. Szczegóły znajdziesz w dzienniku klienta.
+}
+
+UI: {
+	ManagerTitle: Menedżer CustomSkin
+	ImportInbox: Importuj skrzynkę odbiorczą
+	// ImportSkin: Import Skin
+	// ImportSkinDialogTitle: Select a shared .cskin package
+	// ImportSkinHint: Click Import Skin to select a shared .cskin file directly. A successfully imported skin is selected immediately.
+	// ImportedSkin: Imported and selected: {0}
+	// ImportedExistingSkin: This skin is already installed and is now selected: {0}
+	InstallExample: Zainstaluj przykład
+	OpenCreator: Utwórz skórkę
+	CreatorTitle: Kreator CustomSkin
+	CreateTemplate: Utwórz szablon
+	OpenProjectFolder: Otwórz folder
+	RefreshAndUse: Odśwież i użyj
+	ExportPackage: Eksportuj pakiet
+	DeleteProject: Usuń projekt
+	OpenPixelEditor: Edytor pikseli
+	PixelEditorTitle: Edytor pikseli CustomSkin · {0}
+	EditorHint: Wybierz pozę i część, a następnie rysuj piksele na złożonej postaci. Kółko zmienia powiększenie; Ctrl+Z/Y cofa/ponawia; Ctrl+S zapisuje.
+	EditorPlayPause: Odtwarzaj/Pauza
+	EditorGender: Typ ciała
+	// EditorSynchronizedBody: Unisex Sync
+	// EditorSynchronizedBodyHint: Torso and shoulder edits are written to both character-gender slots; separate gender textures are not required.
+	EditorMirror: Odbij
+	EditorOnlyPart: Tylko część
+	EditorGrid: Siatka pikseli
+	// EditorZoomHint: Scroll to zoom canvas
+	EditorUndo: Cofnij
+	EditorRedo: Ponów
+	EditorSave: Zapisz
+	EditorSaveUse: Zapisz i użyj
+	EditorReload: Wczytaj pliki ponownie
+	EditorSaved: Wszystkie trzy robocze pliki PNG zapisano bezpiecznie, a projekt przeszedł weryfikację.
+	EditorSavedUsed: Zapisano bezpiecznie i zastosowano do bieżącej postaci: {0}
+	EditorReloadDirty: Istnieją niezapisane piksele. Najpierw zapisz albo wróć i potwierdź odrzucenie przed ponownym otwarciem edytora.
+	EditorConfirmDiscard: Istnieją niezapisane zmiany. Kliknij Wstecz ponownie, aby je odrzucić.
+	EditorFailed: Działanie edytora nie powiodło się. Kod: {0}  Szczegóły: {1}. Oryginalnego projektu nie pominięto ani celowo nie obniżono.
+	EditorPose: Poza: {0} ({1}/{2}) · {3} · kierunek {4}
+	// EditorPoseNoGender: Pose: {0} ({1}/{2}) · facing {3}
+	EditorSlots: Rzeczywiste pola: Głowa {0} / Tułów {1} / Przednie ramię {2} / Tylne ramię {3} / Nogi {4}
+	EditorAffected: Wybrano: {0}, pole {1} · wpływa na {2} pozy: {3}
+	EditorColor: Bieżące RGBA: {0}, {1}, {2}, {3}
+	EditorColorInputHint: R, G, B, A
+	EditorColorApply: Zastosuj
+	EditorColorInputInvalid: Nieprawidłowy kolor. Każde pole R, G, B i A musi zawierać wartość od 0 do 255.
+	EditorColorInputApplied: Zastosowano wartości RGBA; kolor trafi do ostatnich kolorów po użyciu go do rysowania.
+	EditorHistory: Cofanie {0}/{1} pociągnięć, około {2}/{3} KiB · powiększenie {4}x · {5}
+	EditorDirty: niezapisane
+	EditorClean: zapisane
+	EditorReferenceFolder: Folder odniesienia
+	EditorReferenceImport: Importuj PNG
+	EditorReferenceDialogTitle: Wybierz statyczny obraz odniesienia PNG
+	EditorReferenceReload: Wczytaj PNG ponownie
+	EditorReferenceVisible: Pokaż odniesienie
+	EditorReferenceOpacityDown: Krycie −
+	EditorReferenceOpacityUp: Krycie +
+	EditorReferenceMirror: Odbij PNG
+	EditorReferenceReset: Resetuj pozycję
+	// EditorReferenceMoveHint: Move reference: Arrow keys = 1 px · Shift+Arrow keys = 5 px (hold to repeat)
+	EditorReferenceOverlay: Nałóż na część
+	EditorReferenceReplace: Zastąp część
+	EditorReferenceFolderOpened: Otwarto folder odniesienia. Umieść w nim statyczny PNG o nazwie {0}, a następnie kliknij „Wczytaj PNG ponownie”.
+	EditorReferenceLoaded: Wczytano PNG odniesienia: {0}×{1} pikseli.
+	EditorReferenceMissing: Nie znaleziono {0}. Otwórz folder odniesienia, dodaj statyczny PNG i wczytaj go ponownie.
+	EditorReferencePauseRequired: Wstrzymaj animację przed nałożeniem lub zastąpieniem pikseli, aby ustalić klatkę docelową.
+	EditorReferenceShowRequired: Pokaż obraz odniesienia w bieżącej pozie przed nałożeniem lub zastąpieniem pikseli.
+	EditorReferenceReplaced: Zastąpiono {0} w {1}; pole atlasu współdzieli {2} póz. Dostępne jest cofnięcie.
+	EditorReferenceOverlaid: Nałożono piksele na {0} w {1}; pole atlasu współdzieli {2} póz. Dostępne jest cofnięcie.
+	EditorReferenceNoPixels: Operacja nie zmieniła pikseli wybranej części.
+	EditorReferenceNone: Odniesienie: brak · oczekiwany plik: {0}
+	EditorReferenceState: Odniesienie: {0}×{1} · przesunięcie {2},{3} · krycie {4}/255 · {5}
+	EditorReferenceMirrored: odbite
+	EditorReferenceNormal: normalne
+	EditorMale: ciało męskie
+	EditorFemale: ciało żeńskie
+	EditorLeft: lewo
+	EditorRight: prawo
+
+	EditorParts: {
+		Head: Głowa
+		Torso: Tułów
+		FrontShoulder: Przedni bark
+		FrontArm: Przednie ramię
+		BackShoulder: Tylny bark
+		BackArm: Tylne ramię
+		Legs: Nogi
+	}
+
+	EditorTools: {
+		Pencil: Ołówek
+		Eraser: Gumka
+		Eyedropper: Pipeta
+	}
+
+	EditorPoses: {
+		Idle: Bezczynność
+		BodyAction: Ruch ciała {0}
+		JumpAir: Skok/Powietrze {0}
+		GroundMove: Ruch po ziemi {0}
+		WeaponArm: Ramię z bronią {0}
+		NativeLegs: Domyślne nogi specjalne/przejściowe {0}
+	}
+
+	EditorStates: {
+		Idle: Bezczynność
+		BodyAction: Ruch ciała
+		JumpAir: Skok/Powietrze
+		GroundMove: Ruch po ziemi
+		WeaponArm: Ramię z bronią
+		NativeSpecial: Domyślne nogi specjalne
+	}
+
+	CreatorHint: Utwórz szablon generuje i otwiera tutaj edytowalny folder: {0}
+	NoCreatorProjects: Nie ma jeszcze projektów. Kliknij Utwórz szablon; Python ani zewnętrzni agenci nie są wymagani.
+	NoCreatorProjectSelected: Najpierw utwórz lub wybierz projekt skórki.
+	ProjectNotLoaded: Nie zaimportowano
+	ProjectLoaded: Zaimportowano
+	ProjectHasError: Wymaga naprawy
+	CreatorProjectDetails:
+		'''
+		Projekt: {0}
+		Folder: {1}
+		Ostatnia zaimportowana wersja: {2}
+		'''
+	TemplateCreated: Utworzono szablon i otwarto folder: {0}
+	TemplateDefaultName: Nowa skórka {0}
+	TemplateDefaultAuthor: Gracz
+	TemplateDefaultDescription: Utworzono za pomocą szablonu CustomSkin w grze.
+	ProjectFolderOpened: Otwarto folder projektu: {0}
+	ProjectRefreshed: Obrazy wczytano ponownie i zastosowano do bieżącej postaci: {0}
+	ProjectExported: Wyeksportowano pakiet do udostępnienia i otwarto folder eksportu: {0}
+	ConfirmDeleteProject: Kliknij Usuń projekt ponownie, aby przenieść „{0}” do możliwego do odzyskania folderu CreatorTrash. Zainstalowana kopia w bibliotece nie zostanie usunięta.
+	ProjectDeleted: Projekt „{0}” przeniesiono do CreatorTrash: {1}. Zainstalowana skórka nadal jest dostępna w menedżerze.
+	ProjectFailed:
+		'''
+		Działanie nie powiodło się. Kod: {0}  Szczegóły: {1}
+		Sugestia: {2}
+		'''
+	ViewTrash: Otwórz kosz
+	ViewLibrary: Wróć do biblioteki
+	ClearSelection: Wyczyść wybór
+	SelectionCleared: Wybór skórki wyczyszczono.
+	InboxHint: Umieść pliki .cskin w: {0}
+	NoSelection: Wybrana skórka: brak
+	CharacterSelectionScope: Postać: {0} (wybór skórki jest zapisywany osobno dla każdej postaci)
+	SelectedDetails:
+		'''
+		Wybrano: {0}
+		Autor: {1}
+		Wersja: {2}
+		Skrót: {3}
+		'''
+	TextureDiagnostics: Tekstury robocze: {0} aktywne / {1} utworzone / {2} zwolnione
+	EmptyLibrary: Lokalna biblioteka skórek jest pusta. Zainstaluj przykład lub umieść plik .cskin w skrzynce odbiorczej.
+	EmptyTrash: Kosz jest pusty. Brak skórek do odzyskania.
+	TrashHint: Folder kosza: {0}. Przywrócenie zwraca skórkę do biblioteki; trwałego usunięcia nie można cofnąć.
+	Delete: Usuń
+	Restore: Przywróć
+	PermanentDelete: Usuń na zawsze
+	Selected: Wybrana skórka: {0}
+	ConfirmDelete: Kliknij Usuń ponownie, aby przenieść „{0}” do kosza z możliwością odzyskania.
+	Deleted: Usunięto z biblioteki: {0}
+	Restored: Przywrócono do biblioteki: {0}
+	ConfirmPermanentDelete: Kliknij Usuń na zawsze ponownie, aby trwale usunąć „{0}”. Tej operacji nie można cofnąć.
+	PermanentlyDeleted: Usunięto trwale: {0}
+	NoPackages: Nie znaleziono pakietów .cskin w {0}
+	ImportFailed:
+		'''
+		Import nie powiódł się: {0}
+		Miejsce/kod: {1}  Szczegóły: {2}
+		Sugerowane działanie: {3}
+		'''
+
+	ImportHints: {
+		Package: Przebuduj pakiet przez eksport create-customskin; nie dodawaj, nie usuwaj ani nie zmieniaj ręcznie nazw plików w środku.
+		Manifest: Popraw wskazane pole manifest.json lub wyeksportuj ponownie ze standardowego projektu autorskiego.
+		Image: Wyeksportuj ponownie wskazany plik w wymaganych wymiarach i nieprzeplatanym 8-bitowym formacie RGBA PNG.
+		License: Zapisz LICENSE.txt jako prawidłowy UTF-8 poniżej 64 KiB albo pomiń go, ponieważ plik licencji jest opcjonalny.
+		Creator: Przywróć wymagane nazwy plików i foldery szablonu, zapisz PNG, a następnie kliknij Odśwież i użyj ponownie.
+		Repository: Potwierdź, że skórka nadal istnieje w bibliotece, i zaimportuj ją ponownie; zachowaj kod, jeśli błąd się powtarza.
+		Unknown: Zachowaj kod i szczegóły przy zgłaszaniu problemu; nie omijaj weryfikacji przez usuwanie wymaganych plików.
+	}
+
+	ImportSummary: Import zakończony: {0} nowych, {1} już zainstalowanych.
+	ExampleReady: Wbudowany przykład zaimportowano i wybrano.
+	OperationFailed: Operacja nie powiodła się. Kod: {0}  Szczegóły: {1}
+}
+
+Errors: {
+	Package: Struktura lub zestaw plików pakietu skórki jest nieprawidłowy.
+	Manifest: Manifest skórki zawiera brakujące, nieobsługiwane lub nieprawidłowe pole.
+	Image: Obraz skórki ma nieprawidłowy format, rozmiar, strukturę lub sumę kontrolną.
+	License: Opcjonalny tekst licencji ma nieprawidłowe kodowanie, znak lub rozmiar.
+	Project: W projekcie brakuje wymaganego pliku lub nie można uzyskać do niego bezpiecznego dostępu.
+	Repository: Wpis zainstalowanej biblioteki nie istnieje, jest uszkodzony lub koliduje z istniejącym wpisem.
+	Selection: Zapisany wybór skórki postaci jest nieprawidłowy lub niedostępny.
+	Editor: Edytor pikseli nie mógł bezpiecznie ukończyć żądanej operacji.
+	Network: Dane skórki wieloosobowej są nieprawidłowe lub przekraczają dozwolony limit.
+	Unknown: Wystąpił nieoczekiwany błąd. Sprawdź dziennik klienta i zachowaj wyświetlony kod błędu.
+}
+
+Items: {
+	CustomSkinCore: {
+		DisplayName: Rdzeń Custom Skin
+		Tooltip: Włącza wybraną skórkę, gdy aktywny jest tryb Tylko akcesorium.
+	}
+}

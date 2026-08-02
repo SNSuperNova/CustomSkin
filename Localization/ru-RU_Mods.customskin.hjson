@@ -1,0 +1,298 @@
+Configs: {
+	CustomSkinServerConfig: {
+		DisplayName: Настройки сервера CustomSkin
+
+		AllowSkinUploads: {
+			Label: Разрешить загрузку скинов игроков
+			Tooltip: Если отключено, сервер перестаёт запрашивать новые данные скинов. Уже кэшированные и не запрещённые скины остаются доступными.
+		}
+
+		MaxUploadKiB: {
+			Label: Лимит загрузки одного скина (KiB)
+			Tooltip: Ограничивает размер каждого нормализованного ресурса скина, принимаемого сервером. Жёсткий лимит протокола — 800 KiB.
+		}
+
+		MaxCachedResources: {
+			Label: Максимальное число скинов в кэше
+			Tooltip: Максимальное число различных сетевых скинов, хранимых во время этой сессии сервера.
+		}
+
+		MaxCachedResourceMiB: {
+			Label: Максимальный размер кэша (MiB)
+			Tooltip: Общий лимит памяти для сетевых ресурсов скинов, кэшируемых сервером.
+		}
+
+		UploadCooldownSeconds: {
+			Label: Задержка запросов загрузки игрока (секунды)
+			Tooltip: Ограничивает частоту повторных запросов данных скина у одного игрока.
+		}
+
+		BannedSkinHashes: {
+			Label: Хеши запрещённых скинов
+			Tooltip: Введите по одному 64-символьному хешу SHA-256 в строке. Совпавшие скины не загружаются, не назначаются и не передаются и исчезают после применения настроек.
+		}
+	}
+
+	SkinEnableMode: {
+		Always: {
+			$parentVal: Всегда
+			Tooltip: Всегда включает выбранный локальный скин.
+		}
+
+		AccessoryOnly: {
+			$parentVal: Только аксессуар
+			Tooltip: Включает выбранный скин, только когда виден Custom Skin Core.
+		}
+
+		Disabled: {
+			$parentVal: Отключено
+			Tooltip: Отключает выбранный локальный скин.
+		}
+
+		Tooltip: Выберите, когда отображать локальный скин персонажа.
+	}
+
+	CustomSkinClientConfig: {
+		DisplayName: Настройки клиента CustomSkin
+
+		EnableMode: {
+			Label: Режим включения скина
+			Tooltip: Всегда использовать выбранный скин, требовать видимый Custom Skin Core или отключить локальные скины.
+		}
+
+		ShowRemoteSkins: {
+			Label: Показывать CustomSkin других игроков
+			Tooltip: Если отключено, сетевые скины не запрашиваются и не показываются. Ваш локальный скин не меняется.
+		}
+
+		BlockedPlayerNames: {
+			Label: Скрывать скины по именам игроков
+			Tooltip: Совпавшие имена скрывают только CustomSkin игрока, но не игрока и не чат. Регистр не учитывается; обновите список, если игрок сменил имя.
+		}
+	}
+}
+
+Keybinds.OpenSkinManager.DisplayName: Открыть менеджер скинов
+
+Commands: {
+	Description: Открывает менеджер CustomSkin или перезагружает сетевые скины.
+	Usage: Использование: /cskin или /cskin reload
+}
+
+Network: {
+	ReloadStarted: Запрошена повторная синхронизация сетевых скинов. Облики других игроков вернутся после проверки.
+	ReloadUnavailable: /cskin reload можно использовать только после входа в сетевой мир.
+	ReloadHint: Используйте /cskin reload для ручной синхронизации.
+	ServerRejected: Сервер отклонил передачу скина или его проверка не удалась.
+	UploadTimeout: Истекло время загрузки выбранного скина на сервер.
+	DownloadTimeout: Истекло время скачивания скина другого игрока.
+	LocalError: При обработке сетевых данных скина произошла ошибка. Подробности смотрите в журнале клиента.
+}
+
+UI: {
+	ManagerTitle: Менеджер CustomSkin
+	ImportInbox: Импорт из входящих
+	// ImportSkin: Import Skin
+	// ImportSkinDialogTitle: Select a shared .cskin package
+	// ImportSkinHint: Click Import Skin to select a shared .cskin file directly. A successfully imported skin is selected immediately.
+	// ImportedSkin: Imported and selected: {0}
+	// ImportedExistingSkin: This skin is already installed and is now selected: {0}
+	InstallExample: Установить пример
+	OpenCreator: Создать скин
+	CreatorTitle: Создание CustomSkin
+	CreateTemplate: Создать шаблон
+	OpenProjectFolder: Открыть папку
+	RefreshAndUse: Обновить и применить
+	ExportPackage: Экспортировать пакет
+	DeleteProject: Удалить проект
+	OpenPixelEditor: Пиксельный редактор
+	PixelEditorTitle: Пиксельный редактор CustomSkin · {0}
+	EditorHint: Выберите позу и часть, затем рисуйте пиксели на собранном персонаже. Колесо меняет масштаб; Ctrl+Z/Y отменяет/повторяет; Ctrl+S сохраняет.
+	EditorPlayPause: Воспроизведение/Пауза
+	EditorGender: Тип тела
+	// EditorSynchronizedBody: Unisex Sync
+	// EditorSynchronizedBodyHint: Torso and shoulder edits are written to both character-gender slots; separate gender textures are not required.
+	EditorMirror: Отразить
+	EditorOnlyPart: Только часть
+	EditorGrid: Пиксельная сетка
+	// EditorZoomHint: Scroll to zoom canvas
+	EditorUndo: Отменить
+	EditorRedo: Повторить
+	EditorSave: Сохранить
+	EditorSaveUse: Сохранить и применить
+	EditorReload: Перезагрузить файлы
+	EditorSaved: Все три рабочие PNG безопасно сохранены, проект прошёл проверку.
+	EditorSavedUsed: Безопасно сохранено и применено к текущему персонажу: {0}
+	EditorReloadDirty: Есть несохранённые пиксели. Сначала сохраните либо вернитесь и подтвердите отмену перед повторным открытием редактора.
+	EditorConfirmDiscard: Есть несохранённые изменения. Ещё раз нажмите Назад, чтобы отменить их.
+	EditorFailed: Действие редактора не удалось. Код: {0}  Подробности: {1}. Исходный проект не был намеренно обойдён или понижен.
+	EditorPose: Поза: {0} ({1}/{2}) · {3} · направление {4}
+	// EditorPoseNoGender: Pose: {0} ({1}/{2}) · facing {3}
+	EditorSlots: Фактические ячейки: Голова {0} / Туловище {1} / Передняя рука {2} / Задняя рука {3} / Ноги {4}
+	EditorAffected: Выбрано: {0}, ячейка {1} · влияет на {2} поз: {3}
+	EditorColor: Текущий RGBA: {0}, {1}, {2}, {3}
+	EditorColorInputHint: R, G, B, A
+	EditorColorApply: Применить
+	EditorColorInputInvalid: Недопустимый цвет. Каждое поле R, G, B и A должно содержать значение от 0 до 255.
+	EditorColorInputApplied: Значения RGBA применены; цвет появится среди недавних после использования при рисовании.
+	EditorHistory: Отмена {0}/{1} штрихов, около {2}/{3} KiB · масштаб {4}x · {5}
+	EditorDirty: не сохранено
+	EditorClean: сохранено
+	EditorReferenceFolder: Папка референса
+	EditorReferenceImport: Импорт PNG
+	EditorReferenceDialogTitle: Выберите статическое PNG-изображение референса
+	EditorReferenceReload: Перезагрузить PNG
+	EditorReferenceVisible: Показать референс
+	EditorReferenceOpacityDown: Прозрачность −
+	EditorReferenceOpacityUp: Прозрачность +
+	EditorReferenceMirror: Отразить PNG
+	EditorReferenceReset: Сбросить позицию
+	// EditorReferenceMoveHint: Move reference: Arrow keys = 1 px · Shift+Arrow keys = 5 px (hold to repeat)
+	EditorReferenceOverlay: Наложить на часть
+	EditorReferenceReplace: Заменить часть
+	EditorReferenceFolderOpened: Папка референса открыта. Поместите туда статический PNG с именем {0}, затем нажмите «Перезагрузить PNG».
+	EditorReferenceLoaded: Референс PNG загружен: {0}×{1} пикселей.
+	EditorReferenceMissing: Файл {0} не найден. Откройте папку референса, добавьте статический PNG и перезагрузите его.
+	EditorReferencePauseRequired: Остановите анимацию перед наложением или заменой пикселей, чтобы зафиксировать целевой кадр.
+	EditorReferenceShowRequired: Покажите референс в текущей позе перед наложением или заменой пикселей.
+	EditorReferenceReplaced: Часть {0} в {1} заменена; ячейка атласа общая для {2} поз. Доступна отмена.
+	EditorReferenceOverlaid: Пиксели наложены на {0} в {1}; ячейка атласа общая для {2} поз. Доступна отмена.
+	EditorReferenceNoPixels: Операция не изменила пиксели выбранной части.
+	EditorReferenceNone: Референс: нет · ожидаемый файл: {0}
+	EditorReferenceState: Референс: {0}×{1} · смещение {2},{3} · прозрачность {4}/255 · {5}
+	EditorReferenceMirrored: отражён
+	EditorReferenceNormal: обычный
+	EditorMale: мужское тело
+	EditorFemale: женское тело
+	EditorLeft: влево
+	EditorRight: вправо
+
+	EditorParts: {
+		Head: Голова
+		Torso: Туловище
+		FrontShoulder: Переднее плечо
+		FrontArm: Передняя рука
+		BackShoulder: Заднее плечо
+		BackArm: Задняя рука
+		Legs: Ноги
+	}
+
+	EditorTools: {
+		Pencil: Карандаш
+		Eraser: Ластик
+		Eyedropper: Пипетка
+	}
+
+	EditorPoses: {
+		Idle: Покой
+		BodyAction: Действие тела {0}
+		JumpAir: Прыжок/Воздух {0}
+		GroundMove: Движение по земле {0}
+		WeaponArm: Рука с оружием {0}
+		NativeLegs: Особые/переходные стандартные ноги {0}
+	}
+
+	EditorStates: {
+		Idle: Покой
+		BodyAction: Действие тела
+		JumpAir: Прыжок/Воздух
+		GroundMove: Движение по земле
+		WeaponArm: Рука с оружием
+		NativeSpecial: Особые стандартные ноги
+	}
+
+	CreatorHint: Создать шаблон создаёт и открывает здесь редактируемую папку: {0}
+	NoCreatorProjects: Проектов пока нет. Нажмите Создать шаблон; Python и внешние агенты не требуются.
+	NoCreatorProjectSelected: Сначала создайте или выберите проект скина.
+	ProjectNotLoaded: Не импортирован
+	ProjectLoaded: Импортирован
+	ProjectHasError: Требуется исправление
+	CreatorProjectDetails:
+		'''
+		Проект: {0}
+		Папка: {1}
+		Последняя импортированная версия: {2}
+		'''
+	TemplateCreated: Шаблон создан, папка открыта: {0}
+	TemplateDefaultName: Новый скин {0}
+	TemplateDefaultAuthor: Игрок
+	TemplateDefaultDescription: Создано с помощью внутриигрового шаблона CustomSkin.
+	ProjectFolderOpened: Папка проекта открыта: {0}
+	ProjectRefreshed: Изображения перезагружены и применены к текущему персонажу: {0}
+	ProjectExported: Пакет для обмена экспортирован, папка экспорта открыта: {0}
+	ConfirmDeleteProject: Ещё раз нажмите Удалить проект, чтобы переместить «{0}» в восстанавливаемую папку CreatorTrash. Установленная копия в библиотеке не будет удалена.
+	ProjectDeleted: Проект «{0}» перемещён в CreatorTrash: {1}. Установленный скин остаётся доступен в менеджере.
+	ProjectFailed:
+		'''
+		Действие не удалось. Код: {0}  Подробности: {1}
+		Совет: {2}
+		'''
+	ViewTrash: Открыть корзину
+	ViewLibrary: Назад в библиотеку
+	ClearSelection: Снять выбор
+	SelectionCleared: Выбор скина снят.
+	InboxHint: Поместите файлы .cskin сюда: {0}
+	NoSelection: Выбранный скин: нет
+	CharacterSelectionScope: Персонаж: {0} (выбор скина сохраняется отдельно для каждого персонажа)
+	SelectedDetails:
+		'''
+		Выбрано: {0}
+		Автор: {1}
+		Версия: {2}
+		Хеш: {3}
+		'''
+	TextureDiagnostics: Рабочие текстуры: {0} активны / {1} созданы / {2} освобождены
+	EmptyLibrary: Локальная библиотека скинов пуста. Установите пример или поместите файл .cskin во входящую папку.
+	EmptyTrash: Корзина пуста. Восстанавливаемых скинов нет.
+	TrashHint: Папка корзины: {0}. Восстановить возвращает скин в библиотеку; окончательное удаление необратимо.
+	Delete: Удалить
+	Restore: Восстановить
+	PermanentDelete: Удалить навсегда
+	Selected: Выбранный скин: {0}
+	ConfirmDelete: Ещё раз нажмите Удалить, чтобы переместить «{0}» в восстанавливаемую корзину.
+	Deleted: Удалено из библиотеки: {0}
+	Restored: Восстановлено в библиотеку: {0}
+	ConfirmPermanentDelete: Ещё раз нажмите Удалить навсегда, чтобы окончательно удалить «{0}». Это действие необратимо.
+	PermanentlyDeleted: Удалено навсегда: {0}
+	NoPackages: В папке {0} не найдены пакеты .cskin
+	ImportFailed:
+		'''
+		Импорт не удался: {0}
+		Место/код: {1}  Подробности: {2}
+		Рекомендуемое действие: {3}
+		'''
+
+	ImportHints: {
+		Package: Пересоберите пакет через экспорт create-customskin; не добавляйте, не удаляйте и не переименовывайте файлы внутри вручную.
+		Manifest: Исправьте указанное поле manifest.json или снова экспортируйте стандартный авторский проект.
+		Image: Снова экспортируйте указанный файл с нужными размерами в нечересстрочном 8-битном формате RGBA PNG.
+		License: Сохраните LICENSE.txt в корректной кодировке UTF-8 размером менее 64 KiB или не добавляйте его — файл лицензии необязателен.
+		Creator: Восстановите требуемые имена файлов и папки шаблона, сохраните PNG и снова нажмите Обновить и применить.
+		Repository: Убедитесь, что скин ещё есть в библиотеке, и импортируйте снова; сохраните код ошибки, если проблема останется.
+		Unknown: При сообщении о проблеме сохраните код и подробности; не обходите проверку удалением обязательных файлов.
+	}
+
+	ImportSummary: Импорт завершён: новых — {0}, уже установлено — {1}.
+	ExampleReady: Встроенный пример импортирован и выбран.
+	OperationFailed: Операция не удалась. Код: {0}  Подробности: {1}
+}
+
+Errors: {
+	Package: Структура или набор файлов пакета скина недопустимы.
+	Manifest: В манифесте скина отсутствует поле либо оно не поддерживается или недопустимо.
+	Image: Изображение скина имеет недопустимый формат, размер, структуру или контрольную сумму.
+	License: Необязательный текст лицензии имеет недопустимую кодировку, символ или размер.
+	Project: В проекте нет обязательного файла либо безопасный доступ к нему невозможен.
+	Repository: Запись установленной библиотеки отсутствует, повреждена или конфликтует с существующей.
+	Selection: Сохранённый выбор скина персонажа недопустим или больше недоступен.
+	Editor: Пиксельный редактор не смог безопасно завершить запрошенную операцию.
+	Network: Сетевые данные скина недопустимы или превышают разрешённый лимит.
+	Unknown: Произошла непредвиденная ошибка. Проверьте журнал клиента и сохраните показанный код ошибки.
+}
+
+Items: {
+	CustomSkinCore: {
+		DisplayName: Ядро Custom Skin
+		Tooltip: Включает выбранный скин, когда активен режим Только аксессуар.
+	}
+}

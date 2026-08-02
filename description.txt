@@ -1,0 +1,31 @@
+CustomSkin 自定义皮肤
+
+作者：疾风
+
+导入并使用数据型泰拉瑞亚人形皮肤包，同时保留原版动画、武器及大部分 Mod 武器的绘制兼容性。
+
+主要功能：
+- 严格校验 .cskin 皮肤包
+- 替换头部、身体、手臂和腿部外观
+- 本地皮肤库、动画预览、角色独立选择与可恢复删除
+- 联机进入世界后异步获取并显示其他玩家的皮肤
+- [c/65D6A6:游戏内皮肤制作画板]及分享包导出
+- 静态 PNG 参考图透明预览、逐动作帧定位、描图及选中部位写入
+
+在世界中使用[c/F3C969:快捷键 K]或输入[c/70B8FF:命令 /cskin]打开皮肤管理器。
+
+CustomSkin
+
+Author: Hayate
+
+Import and use data-only Terraria humanoid skin packages while preserving native animation, weapon rendering, and compatibility with most modded weapons.
+
+Main features:
+- Strict .cskin package validation
+- Head, body, arm, and leg appearance replacement
+- Local skin library, animated preview, per-character selection, and recoverable deletion
+- Asynchronous multiplayer skin transfer after entering a world
+- [c/65D6A6:In-game skin canvas] and share-package export
+- Static PNG reference overlay, per-pose positioning, tracing, and selected-part pixel transfer
+
+Use [c/F3C969:hotkey K] or enter [c/70B8FF:command /cskin] in a world to open the skin manager.

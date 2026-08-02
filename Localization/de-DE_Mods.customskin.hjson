@@ -1,0 +1,298 @@
+Configs: {
+	CustomSkinServerConfig: {
+		DisplayName: Benutzerdefinierte Skin-Serverkonfiguration
+
+		AllowSkinUploads: {
+			Label: Spieler-Skin-Uploads zulassen
+			Tooltip: Wenn deaktiviert, hört der Server auf, neue Skin-Daten anzufordern. Bereits zwischengespeicherte, nicht gesperrte Skins bleiben verfügbar.
+		}
+
+		MaxUploadKiB: {
+			Label: Upload-Limit pro Haut (KiB)
+			Tooltip: Beschränkt jede vom Server akzeptierte normalisierte Skin-Ressource. Das Protokoll-Hard-Limit beträgt 800 KiB.
+		}
+
+		MaxCachedResources: {
+			Label: Maximale Anzahl zwischengespeicherter Skins
+			Tooltip: Maximale Anzahl verschiedener Multiplayer-Skins, die während dieser Serversitzung aufbewahrt werden.
+		}
+
+		MaxCachedResourceMiB: {
+			Label: Maximale Cache-Größe (MiB)
+			Tooltip: Gesamtspeicherlimit für vom Server zwischengespeicherte Multiplayer-Skin-Ressourcen.
+		}
+
+		UploadCooldownSeconds: {
+			Label: Abklingzeit pro Spieler-Upload-Anfrage (Sekunden)
+			Tooltip: Beschränkt die Häufigkeit, mit der der Server erneut Skin-Daten vom selben Player anfordert.
+		}
+
+		BannedSkinHashes: {
+			Label: Verbotene Skin-Hashes
+			Tooltip: Geben Sie einen 64-stelligen SHA-256-Hash pro Zeile ein. Passende Skins werden nicht hochgeladen, zugewiesen oder bereitgestellt und verschwinden nach dem Anwenden der Konfiguration.
+		}
+	}
+
+	SkinEnableMode: {
+		Always: {
+			$parentVal: Immer
+			Tooltip: Aktiviert immer die ausgewählte lokale Haut.
+		}
+
+		AccessoryOnly: {
+			$parentVal: Nur Zubehör
+			Tooltip: Aktiviert die ausgewählte Haut nur, während der Custom Skin Core sichtbar ist.
+		}
+
+		Disabled: {
+			$parentVal: Deaktiviert
+			Tooltip: Deaktiviert die ausgewählte lokale Haut.
+		}
+
+		Tooltip: Wählen Sie, wenn der lokale Charakter-Skin angezeigt wird.
+	}
+
+	CustomSkinClientConfig: {
+		DisplayName: Benutzerdefinierte Skin-Client-Konfiguration
+
+		EnableMode: {
+			Label: Skin-Aktivierungsmodus
+			Tooltip: Verwenden Sie immer die ausgewählte Haut, benötigen Sie eine sichtbare Custom Skin Core oder deaktivieren Sie lokale Haut.
+		}
+
+		ShowRemoteSkins: {
+			Label: CustomSkins anderer Spieler anzeigen
+			Tooltip: Wenn deaktiviert, werden Remote-Multiplayer-Skins weder angefordert noch angezeigt. Ihre lokale Haut bleibt davon unberührt.
+		}
+
+		BlockedPlayerNames: {
+			Label: Skins von Spielernamen ausblenden
+			Tooltip: Übereinstimmende Namen verbergen nur das CustomSkin dieses Spielers, nicht den Spieler oder Chat. Beim Abgleichen wird die Groß- und Kleinschreibung ignoriert. Aktualisieren Sie die Liste, wenn der Spieler den Namen ändert.
+		}
+	}
+}
+
+Keybinds.OpenSkinManager.DisplayName: Skin-Manager öffnen
+
+Commands: {
+	Description: Öffnen Sie den CustomSkin-Manager oder laden Sie die Multiplayer-Skins neu.
+	Usage: Verwendung: /cskin oder /cskin reload
+}
+
+Network: {
+	ReloadStarted: Mehrspieler-Skin-Neusynchronisierung angefordert. Fernauftritte kehren nach der Validierung zurück.
+	ReloadUnavailable: /cskin reload kann nur nach dem Betreten einer Multiplayer-Welt verwendet werden.
+	ReloadHint: Verwenden Sie /cskin reload, um manuell neu zu synchronisieren.
+	ServerRejected: Der Server hat eine Skin-Übertragung abgelehnt oder die Validierung ist fehlgeschlagen.
+	UploadTimeout: Zeitüberschreitung beim Hochladen des ausgewählten Skins auf den Server.
+	DownloadTimeout: Zeitüberschreitung beim Herunterladen des Skin eines anderen Spielers.
+	LocalError: Bei der Verarbeitung von Multiplayer-Skin-Daten ist ein Fehler aufgetreten. Überprüfen Sie das Kundenprotokoll auf Details.
+}
+
+UI: {
+	ManagerTitle: CustomSkin Manager
+	ImportInbox: Posteingang importieren
+	// ImportSkin: Import Skin
+	// ImportSkinDialogTitle: Select a shared .cskin package
+	// ImportSkinHint: Click Import Skin to select a shared .cskin file directly. A successfully imported skin is selected immediately.
+	// ImportedSkin: Imported and selected: {0}
+	// ImportedExistingSkin: This skin is already installed and is now selected: {0}
+	InstallExample: Installationsbeispiel
+	OpenCreator: Skin erstellen
+	CreatorTitle: CustomSkin Ersteller
+	CreateTemplate: Vorlage erstellen
+	OpenProjectFolder: Ordner öffnen
+	RefreshAndUse: Aktualisieren und verwenden
+	ExportPackage: Paket exportieren
+	DeleteProject: Projekt löschen
+	OpenPixelEditor: Pixel-Editor
+	PixelEditorTitle: CustomSkin Pixel-Editor · {0}
+	EditorHint: Wählen Sie eine Pose und eine Komponente aus und zeichnen Sie dann Pixel auf das komponierte Zeichen. Mausrad zoomt; Ctrl+Z/Y rückgängig/wiederherstellen; Ctrl+S speichert.
+	EditorPlayPause: Wiedergabe/Pause
+	EditorGender: Gehäusetyp
+	// EditorSynchronizedBody: Unisex Sync
+	// EditorSynchronizedBodyHint: Torso and shoulder edits are written to both character-gender slots; separate gender textures are not required.
+	EditorMirror: Spiegel
+	EditorOnlyPart: Einzelteil
+	EditorGrid: Pixelraster
+	// EditorZoomHint: Scroll to zoom canvas
+	EditorUndo: Rückgängig machen
+	EditorRedo: Wiederherstellen
+	EditorSave: Speichern
+	EditorSaveUse: Speichern & Verwenden
+	EditorReload: Dateien neu laden
+	EditorSaved: Alle drei Laufzeit-PNGs wurden sicher gespeichert und das Projekt hat die Validierung bestanden.
+	EditorSavedUsed: Sicher gespeichert und auf das aktuelle Zeichen angewendet: {0}
+	EditorReloadDirty: Nicht gespeicherte Pixel sind vorhanden. Speichern Sie zuerst oder kehren Sie zurück und bestätigen Sie die Verwerfung, bevor Sie den Editor erneut öffnen.
+	EditorConfirmDiscard: Nicht gespeicherte Änderungen sind vorhanden. Klicken Sie erneut auf Zurück, um sie zu verwerfen.
+	EditorFailed: Editor-Aktion fehlgeschlagen. Code: {0}  Detail: {1}. Das ursprüngliche Projekt wurde nicht absichtlich umgangen oder herabgestuft.
+	EditorPose: Pose: {0} ({1}/{2}) · {3} · Verblendung {4}
+	// EditorPoseNoGender: Pose: {0} ({1}/{2}) · facing {3}
+	EditorSlots: Tatsächliche Steckplätze: Head {0} / Torso {1} / Frontarm {2} / Backarm {3} / Legs {4}
+	EditorAffected: Ausgewählt: {0} Steckplatz {1} · beeinflusst {2} Posen: {3}
+	EditorColor: Aktuell RGBA: {0}, {1}, {2}, {3}
+	EditorColorInputHint: R, G, B, A
+	EditorColorApply: Anwenden
+	EditorColorInputInvalid: Ungültige Farbe. Jedes R-, G-, B- und A-Feld muss einen Wert von 0 bis 255 enthalten.
+	EditorColorInputApplied: RGBA-Werte angewendet; die Farbe wird nach der Verwendung zum Zeichnen in Zuletzt verwendete Farben eingegeben.
+	EditorHistory: Rückgängig {0}/{1} Striche, über {2}/{3} KiB · Zoom {4}x · {5}
+	EditorDirty: nicht gespeichert
+	EditorClean: gespeichert
+	EditorReferenceFolder: Referenzordner
+	EditorReferenceImport: PNG importieren
+	EditorReferenceDialogTitle: Statisches PNG-Referenzbild auswählen
+	EditorReferenceReload: PNG neu laden
+	EditorReferenceVisible: Referenz anzeigen
+	EditorReferenceOpacityDown: Deckkraft −
+	EditorReferenceOpacityUp: Deckkraft +
+	EditorReferenceMirror: PNG spiegeln
+	EditorReferenceReset: Position zurücksetzen
+	// EditorReferenceMoveHint: Move reference: Arrow keys = 1 px · Shift+Arrow keys = 5 px (hold to repeat)
+	EditorReferenceOverlay: Auf Teil legen
+	EditorReferenceReplace: Teil ersetzen
+	EditorReferenceFolderOpened: Referenzordner geöffnet. Lege dort ein statisches PNG namens {0} ab und klicke dann auf „PNG neu laden“.
+	EditorReferenceLoaded: Referenz-PNG geladen: {0}×{1} Pixel.
+	EditorReferenceMissing: Nicht gefunden: {0}. Öffne den Referenzordner, füge das statische PNG hinzu und lade es neu.
+	EditorReferencePauseRequired: Pausiere die Animation vor dem Überlagern oder Ersetzen, damit das Zielframe feststeht.
+	EditorReferenceShowRequired: Zeige das Referenzbild in der aktuellen Pose an, bevor Pixel überlagert oder ersetzt werden.
+	EditorReferenceReplaced: Ersetzt: {0} in {1}; der Atlasplatz wird von {2} Posen gemeinsam genutzt. Rückgängig ist verfügbar.
+	EditorReferenceOverlaid: Referenzpixel wurden auf {0} in {1} gelegt; der Atlasplatz wird von {2} Posen gemeinsam genutzt. Rückgängig ist verfügbar.
+	EditorReferenceNoPixels: Die Aktion hat im ausgewählten Teil keine Pixel geändert.
+	EditorReferenceNone: Referenz: keine · erwartete Datei: {0}
+	EditorReferenceState: Referenz: {0}×{1} · Versatz {2},{3} · Deckkraft {4}/255 · {5}
+	EditorReferenceMirrored: gespiegelt
+	EditorReferenceNormal: normal
+	EditorMale: männlicher Körper
+	EditorFemale: weiblicher Körper
+	EditorLeft: links
+	EditorRight: rechts
+
+	EditorParts: {
+		Head: Kopf
+		Torso: Rumpf
+		FrontShoulder: Vordere Schulter
+		FrontArm: Vorderer Arm
+		BackShoulder: Rückenschulter
+		BackArm: Hinterer Arm
+		Legs: Beine
+	}
+
+	EditorTools: {
+		Pencil: Bleistift
+		Eraser: Radierer
+		Eyedropper: Pipette
+	}
+
+	EditorPoses: {
+		Idle: Leerlauf
+		BodyAction: Body Action {0}
+		JumpAir: Jump/Air {0}
+		GroundMove: Ground Move {0}
+		WeaponArm: Waffenarm {0}
+		NativeLegs: Native Spezial-/Übergangsbeine {0}
+	}
+
+	EditorStates: {
+		Idle: Leerlauf
+		BodyAction: Körperaktion
+		JumpAir: Jump/Air
+		GroundMove: Bodenbewegung
+		WeaponArm: Waffenarm
+		NativeSpecial: Einheimische Spezialbeine
+	}
+
+	CreatorHint: Vorlage erstellen erzeugt und öffnet hier einen editierbaren Ordner: {0}
+	NoCreatorProjects: Noch keine Creator-Projekte. Klicken Sie auf Vorlage erstellen, um zu beginnen; Python und externe Agenten sind nicht erforderlich.
+	NoCreatorProjectSelected: Erstelle oder wähle zuerst ein Skin Creator-Projekt aus.
+	ProjectNotLoaded: Nicht importiert
+	ProjectLoaded: Importiert
+	ProjectHasError: Muss repariert werden
+	CreatorProjectDetails:
+		'''
+		Ersteller Projekt: {0}
+		Ordner: {1}
+		Letzte importierte Revision: {2}
+		'''
+	TemplateCreated: Vorlage erstellt und Ordner geöffnet: {0}
+	TemplateDefaultName: Neue Haut {0}
+	TemplateDefaultAuthor: Spieler
+	TemplateDefaultDescription: Erstellt mit der spielinternen Vorlage CustomSkin.
+	ProjectFolderOpened: Erstellerordner geöffnet: {0}
+	ProjectRefreshed: Bilder neu geladen und auf das aktuelle Zeichen angewendet: {0}
+	ProjectExported: Freigabepaket exportiert und Exportordner geöffnet: {0}
+	ConfirmDeleteProject: Klicken Sie erneut auf Projekt löschen, um "{0}" in den wiederherstellbaren CreatorTrash-Ordner zu verschieben. Die installierte Bibliothekskopie wird nicht gelöscht.
+	ProjectDeleted: Creator-Projekt „{0}“ wurde in CreatorTrash: {1} verschoben. Sein installierter Skin bleibt im Skin-Manager verfügbar.
+	ProjectFailed:
+		'''
+		Aktion fehlgeschlagen. Code: {0}  Detail: {1}
+		Vorschlag: {2}
+		'''
+	ViewTrash: Papierkorb anzeigen
+	ViewLibrary: Zurück zur Bibliothek
+	ClearSelection: Auswahl zurücksetzen
+	SelectionCleared: Hautauswahl geklärt.
+	InboxHint: .cskin-Dateien platzieren in: {0}
+	NoSelection: Ausgewählte Haut: keine
+	CharacterSelectionScope: Zeichen: {0} (Skinauswahl wird pro Zeichen gespeichert)
+	SelectedDetails:
+		'''
+		Ausgewählt: {0}
+		Autor: {1}
+		Version: {2}
+		Hash: {3}
+		'''
+	TextureDiagnostics: Laufzeittexturen: {0} live / {1} erstellt / {2} entsorgt
+	EmptyLibrary: Die lokale Skin-Bibliothek ist leer. Installieren Sie das Beispiel oder legen Sie eine .cskin-Datei in den Posteingang.
+	EmptyTrash: Der Papierkorb ist leer. Es gibt keine wiederherstellbaren Skins.
+	TrashHint: Papierkorb-Ordner: {0}. Wiederherstellen gibt einen Skin an die Bibliothek zurück; das dauerhafte Löschen kann nicht rückgängig gemacht werden.
+	Delete: Löschen
+	Restore: Wiederherstellen
+	PermanentDelete: Für immer löschen
+	Selected: Ausgewählte Haut: {0}
+	ConfirmDelete: Klicken Sie erneut auf Löschen, um "{0}" in den wiederherstellbaren Papierkorb zu verschieben.
+	Deleted: Aus Bibliothek entfernt: {0}
+	Restored: In Bibliothek wiederhergestellt: {0}
+	ConfirmPermanentDelete: Klicken Sie erneut auf Für immer löschen, um "{0}" dauerhaft zu entfernen. Dies kann nicht rückgängig gemacht werden.
+	PermanentlyDeleted: Dauerhaft gelöscht: {0}
+	NoPackages: Es wurden keine .cskin-Pakete in {0} gefunden
+	ImportFailed:
+		'''
+		Import fehlgeschlagen: {0}
+		Ort/Code: {1}  Detail: {2}
+		Empfohlene Aktion: {3}
+		'''
+
+	ImportHints: {
+		Package: Erstellen Sie das Paket mit create-customskin export neu. Fügen Sie darin keine Dateien manuell hinzu, entfernen Sie sie nicht und benennen Sie sie nicht um.
+		Manifest: Korrigieren Sie das angegebene Feld manifest.json oder exportieren Sie es erneut aus einem Standard-Authoring-Projekt.
+		Image: Exportieren Sie die angegebene Datei erneut mit den erforderlichen Abmessungen und im nicht verschachtelten 8-Bit-Format RGBA PNG.
+		License: Speichern Sie LICENSE.txt als gültiges UTF-8 unter 64 KiB oder lassen Sie es weg, da eine Lizenzdatei optional ist.
+		Creator: Stellen Sie die erforderlichen Vorlagendateinamen und -ordner wieder her, speichern Sie die PNG-Dateien und klicken Sie dann auf Erneut aktualisieren und verwenden.
+		Repository: Bestätigen Sie, dass der Skin noch in der Bibliothek vorhanden ist, und importieren Sie ihn erneut. Behalten Sie den Fehlercode bei, wenn er fortbesteht.
+		Unknown: Behalten Sie den Fehlercode und die Details bei, wenn Sie das Problem melden. Umgehen Sie die Validierung nicht, indem Sie die erforderlichen Dateien löschen.
+	}
+
+	ImportSummary: Import abgeschlossen: {0} neu, {1} bereits installiert.
+	ExampleReady: Das gebündelte Beispiel wurde importiert und ausgewählt.
+	OperationFailed: Vorgang fehlgeschlagen. Code: {0}  Detail: {1}
+}
+
+Errors: {
+	Package: Die Skin-Paketstruktur oder der Dateisatz ist ungültig.
+	Manifest: Das Skin-Manifest enthält ein fehlendes, nicht unterstütztes oder ungültiges Feld.
+	Image: Ein Skin-Bild hat ein ungültiges Format, eine ungültige Größe, Struktur oder Prüfsumme.
+	License: Der optionale Lizenztext hat eine ungültige Codierung, ein ungültiges Zeichen oder eine ungültige Größe.
+	Project: Dem Creator-Projekt fehlt eine erforderliche Datei oder es kann nicht sicher darauf zugegriffen werden.
+	Repository: Der installierte Skin-Bibliothekseintrag fehlt, ist beschädigt oder steht in Konflikt mit einem vorhandenen Eintrag.
+	Selection: Die gespeicherte Charakter-Skin-Auswahl ist ungültig oder nicht mehr verfügbar.
+	Editor: Der Pixel-Editor konnte den angeforderten Vorgang nicht sicher abschließen.
+	Network: Mehrspieler-Skin-Daten sind ungültig oder überschreiten ein zulässiges Limit.
+	Unknown: Ein unerwarteter Fehler ist aufgetreten. Überprüfen Sie das Clientprotokoll und bewahren Sie den angezeigten Fehlercode auf.
+}
+
+Items: {
+	CustomSkinCore: {
+		DisplayName: Custom Skin Core
+		Tooltip: Aktiviert die ausgewählte Haut, wenn der Nur-Zubehör-Modus aktiv ist.
+	}
+}

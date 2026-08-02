@@ -1,0 +1,298 @@
+Configs: {
+	CustomSkinServerConfig: {
+		DisplayName: Configuración del servidor CustomSkin
+
+		AllowSkinUploads: {
+			Label: Permitir subir skins de jugadores
+			Tooltip: Al desactivarlo, el servidor deja de solicitar nuevos datos de skins. Las skins ya almacenadas y no bloqueadas siguen disponibles.
+		}
+
+		MaxUploadKiB: {
+			Label: Límite de subida por skin (KiB)
+			Tooltip: Limita cada recurso de skin normalizado que acepta el servidor. El límite estricto del protocolo es 800 KiB.
+		}
+
+		MaxCachedResources: {
+			Label: Máximo de skins en caché
+			Tooltip: Número máximo de skins multijugador diferentes conservadas durante esta sesión del servidor.
+		}
+
+		MaxCachedResourceMiB: {
+			Label: Tamaño máximo de caché (MiB)
+			Tooltip: Límite total de memoria para los recursos de skins multijugador almacenados por el servidor.
+		}
+
+		UploadCooldownSeconds: {
+			Label: Espera de solicitudes de subida por jugador (segundos)
+			Tooltip: Limita la frecuencia con la que el servidor vuelve a solicitar datos de skin al mismo jugador.
+		}
+
+		BannedSkinHashes: {
+			Label: Hashes de skins bloqueadas
+			Tooltip: Introduce un hash SHA-256 de 64 caracteres por fila. Las skins coincidentes no se suben, asignan ni distribuyen, y desaparecen al aplicar la configuración.
+		}
+	}
+
+	SkinEnableMode: {
+		Always: {
+			$parentVal: Siempre
+			Tooltip: Activa siempre la skin local seleccionada.
+		}
+
+		AccessoryOnly: {
+			$parentVal: Solo accesorio
+			Tooltip: Activa la skin seleccionada solo mientras Custom Skin Core sea visible.
+		}
+
+		Disabled: {
+			$parentVal: Desactivado
+			Tooltip: Desactiva la skin local seleccionada.
+		}
+
+		Tooltip: Elige cuándo se muestra la skin del personaje local.
+	}
+
+	CustomSkinClientConfig: {
+		DisplayName: Configuración del cliente CustomSkin
+
+		EnableMode: {
+			Label: Modo de activación de skin
+			Tooltip: Usa siempre la skin elegida, exige un Custom Skin Core visible o desactiva las skins locales.
+		}
+
+		ShowRemoteSkins: {
+			Label: Mostrar CustomSkins de otros jugadores
+			Tooltip: Al desactivarlo, no se solicitan ni muestran skins multijugador remotas. Tu skin local no cambia.
+		}
+
+		BlockedPlayerNames: {
+			Label: Ocultar skins según el nombre del jugador
+			Tooltip: Los nombres coincidentes solo ocultan la CustomSkin del jugador, no al jugador ni el chat. No distingue mayúsculas; actualiza la lista si el jugador cambia de nombre.
+		}
+	}
+}
+
+Keybinds.OpenSkinManager.DisplayName: Abrir gestor de skins
+
+Commands: {
+	Description: Abre el gestor de CustomSkin o recarga las skins multijugador.
+	Usage: Uso: /cskin o /cskin reload
+}
+
+Network: {
+	ReloadStarted: Se solicitó resincronizar las skins multijugador. Las apariencias remotas volverán tras validarse.
+	ReloadUnavailable: /cskin reload solo se puede usar tras entrar en un mundo multijugador.
+	ReloadHint: Usa /cskin reload para resincronizar manualmente.
+	ServerRejected: El servidor rechazó una transferencia de skin o su validación falló.
+	UploadTimeout: Se agotó el tiempo al subir la skin seleccionada al servidor.
+	DownloadTimeout: Se agotó el tiempo al descargar la skin de otro jugador.
+	LocalError: Ocurrió un error al procesar datos de skins multijugador. Consulta el registro del cliente para más detalles.
+}
+
+UI: {
+	ManagerTitle: Gestor de CustomSkin
+	ImportInbox: Importar bandeja de entrada
+	// ImportSkin: Import Skin
+	// ImportSkinDialogTitle: Select a shared .cskin package
+	// ImportSkinHint: Click Import Skin to select a shared .cskin file directly. A successfully imported skin is selected immediately.
+	// ImportedSkin: Imported and selected: {0}
+	// ImportedExistingSkin: This skin is already installed and is now selected: {0}
+	InstallExample: Instalar ejemplo
+	OpenCreator: Crear skin
+	CreatorTitle: Creador de CustomSkin
+	CreateTemplate: Crear plantilla
+	OpenProjectFolder: Abrir carpeta
+	RefreshAndUse: Actualizar y usar
+	ExportPackage: Exportar paquete
+	DeleteProject: Eliminar proyecto
+	OpenPixelEditor: Editor de píxeles
+	PixelEditorTitle: Editor de píxeles CustomSkin · {0}
+	EditorHint: Elige una pose y una parte, y dibuja píxeles sobre el personaje compuesto. La rueda ajusta el zoom; Ctrl+Z/Y deshace/rehace; Ctrl+S guarda.
+	EditorPlayPause: Reproducir/Pausa
+	EditorGender: Tipo de cuerpo
+	// EditorSynchronizedBody: Unisex Sync
+	// EditorSynchronizedBodyHint: Torso and shoulder edits are written to both character-gender slots; separate gender textures are not required.
+	EditorMirror: Reflejar
+	EditorOnlyPart: Solo la parte
+	EditorGrid: Cuadrícula de píxeles
+	// EditorZoomHint: Scroll to zoom canvas
+	EditorUndo: Deshacer
+	EditorRedo: Rehacer
+	EditorSave: Guardar
+	EditorSaveUse: Guardar y usar
+	EditorReload: Recargar archivos
+	EditorSaved: Los tres PNG de ejecución se guardaron de forma segura y el proyecto superó la validación.
+	EditorSavedUsed: Guardado de forma segura y aplicado al personaje actual: {0}
+	EditorReloadDirty: Hay píxeles sin guardar. Guarda primero o vuelve y confirma que quieres descartarlos antes de reabrir el editor.
+	EditorConfirmDiscard: Hay cambios sin guardar. Pulsa Atrás de nuevo para descartarlos.
+	EditorFailed: Falló la acción del editor. Código: {0}  Detalle: {1}. El proyecto original no se omitió ni degradó intencionadamente.
+	EditorPose: Pose: {0} ({1}/{2}) · {3} · mirando a {4}
+	// EditorPoseNoGender: Pose: {0} ({1}/{2}) · facing {3}
+	EditorSlots: Casillas reales: Cabeza {0} / Torso {1} / Brazo delantero {2} / Brazo trasero {3} / Piernas {4}
+	EditorAffected: Selección: {0}, casilla {1} · afecta a {2} poses: {3}
+	EditorColor: RGBA actual: {0}, {1}, {2}, {3}
+	EditorColorInputHint: R, G, B, A
+	EditorColorApply: Aplicar
+	EditorColorInputInvalid: Color no válido. Cada campo R, G, B y A debe contener un valor de 0 a 255.
+	EditorColorInputApplied: Valores RGBA aplicados; el color aparecerá en colores recientes después de usarlo para dibujar.
+	EditorHistory: Deshacer {0}/{1} trazos, unos {2}/{3} KiB · zoom {4}x · {5}
+	EditorDirty: sin guardar
+	EditorClean: guardado
+	EditorReferenceFolder: Carpeta de referencia
+	EditorReferenceImport: Importar PNG
+	EditorReferenceDialogTitle: Selecciona una imagen PNG estática de referencia
+	EditorReferenceReload: Recargar PNG
+	EditorReferenceVisible: Mostrar referencia
+	EditorReferenceOpacityDown: Opacidad −
+	EditorReferenceOpacityUp: Opacidad +
+	EditorReferenceMirror: Reflejar PNG
+	EditorReferenceReset: Restablecer posición
+	// EditorReferenceMoveHint: Move reference: Arrow keys = 1 px · Shift+Arrow keys = 5 px (hold to repeat)
+	EditorReferenceOverlay: Superponer en parte
+	EditorReferenceReplace: Reemplazar parte
+	EditorReferenceFolderOpened: Carpeta de referencia abierta. Coloca allí un PNG estático llamado {0} y pulsa «Recargar PNG».
+	EditorReferenceLoaded: PNG de referencia cargado: {0}×{1} píxeles.
+	EditorReferenceMissing: No se encontró {0}. Abre la carpeta de referencia, añade el PNG estático y vuelve a cargarlo.
+	EditorReferencePauseRequired: Pausa la animación antes de superponer o reemplazar píxeles para fijar el fotograma de destino.
+	EditorReferenceShowRequired: Muestra la imagen de referencia en la pose actual antes de superponer o reemplazar píxeles.
+	EditorReferenceReplaced: Se reemplazó {0} en {1}; la celda del atlas se comparte entre {2} poses. Se puede deshacer.
+	EditorReferenceOverlaid: Se superpusieron píxeles sobre {0} en {1}; la celda del atlas se comparte entre {2} poses. Se puede deshacer.
+	EditorReferenceNoPixels: La operación no cambió píxeles en la parte seleccionada.
+	EditorReferenceNone: Referencia: ninguna · archivo esperado: {0}
+	EditorReferenceState: Referencia: {0}×{1} · desplazamiento {2},{3} · opacidad {4}/255 · {5}
+	EditorReferenceMirrored: reflejado
+	EditorReferenceNormal: normal
+	EditorMale: cuerpo masculino
+	EditorFemale: cuerpo femenino
+	EditorLeft: izquierda
+	EditorRight: derecha
+
+	EditorParts: {
+		Head: Cabeza
+		Torso: Torso
+		FrontShoulder: Hombro delantero
+		FrontArm: Brazo delantero
+		BackShoulder: Hombro trasero
+		BackArm: Brazo trasero
+		Legs: Piernas
+	}
+
+	EditorTools: {
+		Pencil: Lápiz
+		Eraser: Goma
+		Eyedropper: Cuentagotas
+	}
+
+	EditorPoses: {
+		Idle: Reposo
+		BodyAction: Acción corporal {0}
+		JumpAir: Salto/Aire {0}
+		GroundMove: Movimiento terrestre {0}
+		WeaponArm: Brazo con arma {0}
+		NativeLegs: Piernas nativas especiales/de transición {0}
+	}
+
+	EditorStates: {
+		Idle: Reposo
+		BodyAction: Acción corporal
+		JumpAir: Salto/Aire
+		GroundMove: Movimiento terrestre
+		WeaponArm: Brazo con arma
+		NativeSpecial: Piernas nativas especiales
+	}
+
+	CreatorHint: Crear plantilla genera y abre aquí una carpeta editable: {0}
+	NoCreatorProjects: Todavía no hay proyectos. Pulsa Crear plantilla para empezar; no hacen falta Python ni agentes externos.
+	NoCreatorProjectSelected: Primero crea o selecciona un proyecto de skin.
+	ProjectNotLoaded: Sin importar
+	ProjectLoaded: Importado
+	ProjectHasError: Necesita reparación
+	CreatorProjectDetails:
+		'''
+		Proyecto de creación: {0}
+		Carpeta: {1}
+		Última revisión importada: {2}
+		'''
+	TemplateCreated: Plantilla creada y carpeta abierta: {0}
+	TemplateDefaultName: Nueva skin {0}
+	TemplateDefaultAuthor: Jugador
+	TemplateDefaultDescription: Creada con la plantilla de CustomSkin del juego.
+	ProjectFolderOpened: Carpeta del proyecto abierta: {0}
+	ProjectRefreshed: Imágenes recargadas y aplicadas al personaje actual: {0}
+	ProjectExported: Paquete para compartir exportado y carpeta de exportación abierta: {0}
+	ConfirmDeleteProject: Pulsa Eliminar proyecto de nuevo para mover “{0}” a la carpeta recuperable CreatorTrash. Su copia instalada en la biblioteca no se eliminará.
+	ProjectDeleted: El proyecto “{0}” se movió a CreatorTrash: {1}. Su skin instalada sigue disponible en el gestor.
+	ProjectFailed:
+		'''
+		Falló la acción. Código: {0}  Detalle: {1}
+		Sugerencia: {2}
+		'''
+	ViewTrash: Ver papelera
+	ViewLibrary: Volver a la biblioteca
+	ClearSelection: Borrar selección
+	SelectionCleared: Selección de skin borrada.
+	InboxHint: Coloca los archivos .cskin en: {0}
+	NoSelection: Skin seleccionada: ninguna
+	CharacterSelectionScope: Personaje: {0} (la selección de skin se guarda por personaje)
+	SelectedDetails:
+		'''
+		Seleccionada: {0}
+		Autor: {1}
+		Versión: {2}
+		Hash: {3}
+		'''
+	TextureDiagnostics: Texturas de ejecución: {0} activas / {1} creadas / {2} liberadas
+	EmptyLibrary: La biblioteca local está vacía. Instala el ejemplo o coloca un archivo .cskin en la bandeja de entrada.
+	EmptyTrash: La papelera está vacía. No hay skins recuperables.
+	TrashHint: Carpeta de papelera: {0}. Restaurar devuelve una skin a la biblioteca; la eliminación permanente no se puede deshacer.
+	Delete: Eliminar
+	Restore: Restaurar
+	PermanentDelete: Eliminar para siempre
+	Selected: Skin seleccionada: {0}
+	ConfirmDelete: Pulsa Eliminar de nuevo para mover “{0}” a la papelera recuperable.
+	Deleted: Eliminada de la biblioteca: {0}
+	Restored: Restaurada en la biblioteca: {0}
+	ConfirmPermanentDelete: Pulsa Eliminar para siempre de nuevo para borrar “{0}” permanentemente. No se puede deshacer.
+	PermanentlyDeleted: Eliminada permanentemente: {0}
+	NoPackages: No se encontraron paquetes .cskin en {0}
+	ImportFailed:
+		'''
+		Falló la importación: {0}
+		Ubicación/código: {1}  Detalle: {2}
+		Acción sugerida: {3}
+		'''
+
+	ImportHints: {
+		Package: Reconstruye el paquete con la exportación create-customskin; no añadas, elimines ni renombres manualmente sus archivos.
+		Manifest: Corrige el campo indicado de manifest.json o exporta de nuevo desde un proyecto de creación estándar.
+		Image: Vuelve a exportar el archivo indicado con las dimensiones requeridas y formato PNG RGBA de 8 bits no entrelazado.
+		License: Guarda LICENSE.txt como UTF-8 válido de menos de 64 KiB, u omítelo porque el archivo de licencia es opcional.
+		Creator: Restaura los nombres y carpetas requeridos por la plantilla, guarda los PNG y pulsa Actualizar y usar de nuevo.
+		Repository: Confirma que la skin aún existe en la biblioteca e impórtala de nuevo; conserva el código si el error continúa.
+		Unknown: Conserva el código y el detalle al informar del problema; no eludas la validación borrando archivos obligatorios.
+	}
+
+	ImportSummary: Importación completa: {0} nuevas, {1} ya instaladas.
+	ExampleReady: El ejemplo incluido se importó y seleccionó.
+	OperationFailed: Falló la operación. Código: {0}  Detalle: {1}
+}
+
+Errors: {
+	Package: La estructura o el conjunto de archivos del paquete de skin no es válido.
+	Manifest: El manifiesto de la skin contiene un campo ausente, no compatible o no válido.
+	Image: Una imagen de skin tiene un formato, tamaño, estructura o suma de comprobación no válidos.
+	License: El texto de licencia opcional tiene codificación, caracteres o tamaño no válidos.
+	Project: Al proyecto le falta un archivo obligatorio o no se puede acceder a él de forma segura.
+	Repository: La entrada instalada de la biblioteca no existe, está dañada o entra en conflicto con otra entrada.
+	Selection: La selección de skin guardada para el personaje no es válida o ya no está disponible.
+	Editor: El editor de píxeles no pudo completar de forma segura la operación solicitada.
+	Network: Los datos de skin multijugador no son válidos o superan un límite permitido.
+	Unknown: Ocurrió un error inesperado. Consulta el registro del cliente y conserva el código mostrado.
+}
+
+Items: {
+	CustomSkinCore: {
+		DisplayName: Núcleo Custom Skin
+		Tooltip: Activa la skin elegida cuando está activo el modo Solo accesorio.
+	}
+}

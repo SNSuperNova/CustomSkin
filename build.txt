@@ -1,0 +1,4 @@
+displayName = CustomSkin
+author = Hayate
+version = 0.8.8
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, Tests\*, Properties\*

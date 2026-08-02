@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "profile": "terraria-humanoid-v1",
+  "cell": { "width": 40, "height": 56 },
+  "important": [
+    "head and legs use runtime frame indices, but body.png is a composite-part atlas rather than 36 whole-character animation frames",
+    "item use normally keeps legs at slot 00 while body and arms animate",
+    "slots marked native-special are retained for Terraria compatibility and are not part of the basic creator preview loop"
+  ],
+  "head": {
+    "selection": "follows the runtime body-frame index",
+    "states": [
+      { "name": "idle", "slots": [0] },
+      { "name": "body-action", "slots": [1, 2, 3, 4] },
+      { "name": "jump-air", "slots": [5, 6] },
+      { "name": "ground-move", "slots": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] }
+    ]
+  },
+  "legs": {
+    "states": [
+      { "name": "idle-and-item-use", "slots": [0] },
+      { "name": "jump-preview", "slots": [5] },
+      { "name": "ground-move", "slots": [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] },
+      { "name": "native-special-or-transition", "slots": [1, 2, 3, 4, 6] }
+    ]
+  },
+  "body": {
+    "semantics": "composite torso, shoulder, regular arm, and explicit weapon-arm cells",
+    "torsoAndShoulders": {
+      "maleDefaultTorso": 0,
+      "maleJumpTorso": 1,
+      "maleFrontShoulder": 9,
+      "maleBackShoulder": 10,
+      "femaleDefaultTorso": 18,
+      "femaleJumpTorso": 19,
+      "femaleFrontShoulder": 27,
+      "femaleBackShoulder": 28
+    },
+    "runtimePoseLookup": [
+      { "runtimeFrame": 0, "state": "idle", "torso": "default", "frontArm": 2, "backArm": 20 },
+      { "runtimeFrame": 1, "state": "body-action", "torso": "default", "frontArm": 3, "backArm": 21 },
+      { "runtimeFrame": 2, "state": "body-action", "torso": "default", "frontArm": 4, "backArm": 22 },
+      { "runtimeFrame": 3, "state": "body-action", "torso": "default", "frontArm": 5, "backArm": 23 },
+      { "runtimeFrame": 4, "state": "body-action", "torso": "default", "frontArm": 6, "backArm": 24 },
+      { "runtimeFrame": 5, "state": "jump-air", "torso": "jump", "frontArm": 11, "backArm": 29 },
+      { "runtimeFrame": 6, "state": "jump-air", "torso": "default", "frontArm": 12, "backArm": 30 },
+      { "runtimeFrame": 7, "state": "ground-move", "torso": "default", "frontArm": 13, "backArm": 31 },
+      { "runtimeFrame": 8, "state": "ground-move", "torso": "default", "frontArm": 13, "backArm": 31 },
+      { "runtimeFrame": 9, "state": "ground-move", "torso": "default", "frontArm": 13, "backArm": 31 },
+      { "runtimeFrame": 10, "state": "ground-move", "torso": "default", "frontArm": 13, "backArm": 31 },
+      { "runtimeFrame": 11, "state": "ground-move", "torso": "default", "frontArm": 12, "backArm": 30 },
+      { "runtimeFrame": 12, "state": "ground-move", "torso": "default", "frontArm": 12, "backArm": 30 },
+      { "runtimeFrame": 13, "state": "ground-move", "torso": "default", "frontArm": 12, "backArm": 30 },
+      { "runtimeFrame": 14, "state": "ground-move", "torso": "default", "frontArm": 14, "backArm": 32 },
+      { "runtimeFrame": 15, "state": "ground-move", "torso": "default", "frontArm": 15, "backArm": 33 },
+      { "runtimeFrame": 16, "state": "ground-move", "torso": "default", "frontArm": 15, "backArm": 33 },
+      { "runtimeFrame": 17, "state": "ground-move", "torso": "default", "frontArm": 14, "backArm": 32 },
+      { "runtimeFrame": 18, "state": "ground-move", "torso": "default", "frontArm": 12, "backArm": 30 },
+      { "runtimeFrame": 19, "state": "ground-move", "torso": "default", "frontArm": 12, "backArm": 30 }
+    ],
+    "explicitWeaponArms": {
+      "front": { "full": 7, "threeQuarters": 16, "quarter": 25, "none": 34 },
+      "back": { "full": 8, "threeQuarters": 17, "quarter": 26, "none": 35 }
+    }
+  }
+}

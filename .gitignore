@@ -1,0 +1,28 @@
+# Build and IDE output
+bin/
+obj/
+.vs/
+**/bin/
+**/obj/
+*.user
+*.suo
+
+# Packaged or temporary output
+*.tmod
+*.zip
+*.tmp
+*.bak
+
+# Logs, backups, and local working records
+*.log
+Logs/
+logs/
+Backups/
+backups/
+备份/
+
+# Planning, acceptance, and iteration records are intentionally not versioned
+*阶段计划*
+*验收*
+*更新日志*
+*迭代记录*
