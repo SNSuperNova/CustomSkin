@@ -19,18 +19,23 @@ namespace customskin.Common.UI
 {
 	internal sealed class SkinPixelEditorUI : UIState
 	{
+		private static readonly string[] AnimationStates =
+		{
+			"idle", "body-action", "jump-air", "ground-move", "weapon-arm", "native-special"
+		};
 		private readonly SkinCreatorProject project;
 		private readonly SkinEditorDocument document;
 		private readonly SkinEditorSettings settings;
 		private SkinEditorPart activePart;
 		private SkinEditorCanvas canvas = null!;
-		private UIText poseText = null!;
 		private UIText slotText = null!;
 		private UIText affectedText = null!;
 		private UIText colorText = null!;
-		private UIText historyText = null!;
 		private UIText statusText = null!;
+		private SkinEditorTextInput projectNameInput = null!;
 		private UIElement partHost = null!;
+		private UIElement animationGroupHost = null!;
+		private UIElement frameHost = null!;
 		private UIElement toolHost = null!;
 		private UIElement paletteHost = null!;
 		private UITextPanel<string> onlyPartButton = null!;
@@ -38,8 +43,13 @@ namespace customskin.Common.UI
 		private UITextPanel<string> referenceVisibleButton = null!;
 		private UITextPanel<string> referenceOverlayButton = null!;
 		private UITextPanel<string> referenceReplaceButton = null!;
+		private UITextPanel<string> copyPreviousButton = null!;
+		private UITextPanel<string> copyNextButton = null!;
+		private UITextPanel<string> confirmSelectionButton = null!;
+		private UITextPanel<string> cancelSelectionButton = null!;
 		private SkinReferenceImage? referenceImage;
 		private readonly List<SkinEditorColor> recentColors = new();
+		private readonly List<SkinEditorColor> commonColors = new();
 		private bool playing;
 		private int playbackTicks;
 		private bool pendingDiscard;
@@ -59,6 +69,10 @@ namespace customskin.Common.UI
 			settings.Gender = SkinEditorGender.Male;
 			activePart = Enum.IsDefined(settings.Part) ? settings.Part : SkinEditorPart.Head;
 			settings.Part = activePart;
+			// Keep the common palette stable for this editing session. Reference-image
+			// overlay/replacement can alter thousands of pixels and must not displace
+			// the author's existing colors merely because the atlas changed.
+			commonColors.AddRange(document.ExtractPalette(10).Where(color => color.A > 0));
 		}
 
 		public override void OnInitialize()
@@ -73,45 +87,102 @@ namespace customskin.Common.UI
 			};
 			Append(panel);
 
-			UIText title = new(Language.GetTextValue("Mods.customskin.UI.PixelEditorTitle", project.DisplayName), 1.05f)
+			UIElement titleBar = new()
 			{
 				HAlign = 0.5f,
-				Top = new StyleDimension(6f, 0f)
+				Top = new StyleDimension(3f, 0f),
+				Width = new StyleDimension(620f, 0f),
+				Height = new StyleDimension(36f, 0f)
 			};
-			panel.Append(title);
+			panel.Append(titleBar);
+			UIText title = new(Language.GetTextValue("Mods.customskin.UI.PixelEditorHeading"), 0.9f)
+			{
+				Left = new StyleDimension(0f, 0f),
+				VAlign = 0.5f
+			};
+			titleBar.Append(title);
+			projectNameInput = new SkinEditorTextInput(Language.GetTextValue("Mods.customskin.UI.EditorProjectNameHint"), 80)
+			{
+				Left = new StyleDimension(238f, 0f),
+				Width = new StyleDimension(-238f, 1f),
+				Height = new StyleDimension(32f, 0f),
+				VAlign = 0.5f
+			};
+			projectNameInput.SetText(project.DisplayName);
+			projectNameInput.Submitted += RenameProject;
+			projectNameInput.Cancelled += () => projectNameInput.SetText(project.DisplayName);
+			titleBar.Append(projectNameInput);
 
 			canvas = new SkinEditorCanvas(document, settings, () => activePart, () => Pose, () => referenceImage,
-				() => settings.GetReferenceFrame(settings.PoseIndex), OnCanvasChanged, PickColor)
+				() => settings.GetReferenceFrame(settings.PoseIndex), OnCanvasChanged, PickColor, OnSelectionStateChanged)
 			{
 				Left = new StyleDimension(18f, 0f),
 				Top = new StyleDimension(48f, 0f),
 				Width = new StyleDimension(-18f, 0.48f),
-				Height = new StyleDimension(-128f, 1f)
+				Height = new StyleDimension(-166f, 1f)
 			};
 			panel.Append(canvas);
 
-			UIElement controls = new()
+			UIElement controlsViewport = new()
 			{
 				Left = new StyleDimension(12f, 0.49f),
 				Top = new StyleDimension(48f, 0f),
 				Width = new StyleDimension(-30f, 0.51f),
-				Height = new StyleDimension(-128f, 1f)
+				Height = new StyleDimension(-166f, 1f),
+				OverflowHidden = true
 			};
-			panel.Append(controls);
+			panel.Append(controlsViewport);
 
-			UITextPanel<string> previous = PercentButton("◀", 0f, 0.07f, 0f);
-			previous.OnLeftClick += (_, _) => ChangePose(-1);
-			controls.Append(previous);
-			UITextPanel<string> play = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorPlayPause"), 0.08f, 0.17f, 0f);
-			play.OnLeftClick += (_, _) => { document.CommitStroke(); playing = !playing; playbackTicks = 0; RefreshLabels(); };
+			UIList controlsList = new()
+			{
+				Width = new StyleDimension(-22f, 1f),
+				Height = new StyleDimension(0f, 1f),
+				ListPadding = 0f
+			};
+			controlsViewport.Append(controlsList);
+			UIScrollbar controlsScrollbar = new()
+			{
+				HAlign = 1f,
+				Width = new StyleDimension(18f, 0f),
+				Height = new StyleDimension(0f, 1f)
+			};
+			controlsViewport.Append(controlsScrollbar);
+			controlsList.SetScrollbar(controlsScrollbar);
+
+			UIElement controls = new()
+			{
+				Width = new StyleDimension(0f, 1f),
+				Height = new StyleDimension(616f, 0f)
+			};
+			controlsList.Add(controls);
+
+			animationGroupHost = new UIElement { Width = new StyleDimension(0f, 1f), Height = new StyleDimension(34f, 0f) };
+			controls.Append(animationGroupHost);
+			BuildAnimationGroupButtons();
+
+			frameHost = new UIElement { Top = new StyleDimension(38f, 0f), Width = new StyleDimension(0f, 1f), Height = new StyleDimension(70f, 0f) };
+			controls.Append(frameHost);
+			BuildFrameButtons();
+
+			UITextPanel<string> play = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorPlayPause"), 0f, 0.19f, 76f);
+			play.OnLeftClick += (_, _) =>
+			{
+				if (canvas.HasFloatingSelection)
+				{
+					SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorSelectionResolveFirst"), Color.Orange);
+					return;
+				}
+				document.CommitStroke();
+				playing = !playing;
+				playbackTicks = 0;
+				BuildFrameButtons();
+				RefreshLabels();
+			};
 			controls.Append(play);
-			UITextPanel<string> next = PercentButton("▶", 0.26f, 0.07f, 0f);
-			next.OnLeftClick += (_, _) => ChangePose(1);
-			controls.Append(next);
-			UITextPanel<string> mirror = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorMirror"), 0.34f, 0.20f, 0f);
+			UITextPanel<string> mirror = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorMirror"), 0.20f, 0.19f, 76f);
 			mirror.OnLeftClick += (_, _) => { EndStroke(); settings.MirrorPreview = !settings.MirrorPreview; RefreshLabels(); };
 			controls.Append(mirror);
-			onlyPartButton = StyledPercentButton(Language.GetTextValue("Mods.customskin.UI.EditorOnlyPart"), 0.55f, 0.25f, 0f, settings.OnlySelectedPart);
+			onlyPartButton = StyledPercentButton(Language.GetTextValue("Mods.customskin.UI.EditorOnlyPart"), 0.40f, 0.19f, 76f, settings.OnlySelectedPart);
 			onlyPartButton.OnLeftClick += (_, _) =>
 			{
 				EndStroke();
@@ -119,61 +190,55 @@ namespace customskin.Common.UI
 				ApplySelectedButtonStyle(onlyPartButton, settings.OnlySelectedPart);
 			};
 			controls.Append(onlyPartButton);
-
-			poseText = Label(0f, 40f, 0.82f);
-			controls.Append(poseText);
-			slotText = Label(0f, 64f, 0.7f);
+			slotText = Label(0f, 116f, 0.66f);
 			controls.Append(slotText);
-				affectedText = Label(0f, 88f, 0.70f, 54f);
+			affectedText = Label(0f, 140f, 0.66f, 24f);
 			controls.Append(affectedText);
 
-			partHost = new UIElement { Top = new StyleDimension(146f, 0f), Width = new StyleDimension(0f, 1f), Height = new StyleDimension(70f, 0f) };
+			partHost = new UIElement { Top = new StyleDimension(168f, 0f), Width = new StyleDimension(0f, 1f), Height = new StyleDimension(32f, 0f) };
 			controls.Append(partHost);
 			BuildPartButtons();
 
-			toolHost = new UIElement { Top = new StyleDimension(220f, 0f), Width = new StyleDimension(0f, 1f), Height = new StyleDimension(34f, 0f) };
+			toolHost = new UIElement { Top = new StyleDimension(204f, 0f), Width = new StyleDimension(0f, 1f), Height = new StyleDimension(34f, 0f) };
 			controls.Append(toolHost);
 			BuildToolButtons();
 
-			paletteHost = new UIElement { Top = new StyleDimension(260f, 0f), Width = new StyleDimension(0f, 1f), Height = new StyleDimension(34f, 0f) };
+			paletteHost = new UIElement { Top = new StyleDimension(244f, 0f), Width = new StyleDimension(0f, 1f), Height = new StyleDimension(34f, 0f) };
 			controls.Append(paletteHost);
 			BuildPaletteButtons();
 
-			colorText = Label(0f, 300f, 0.7f);
+			colorText = Label(0f, 284f, 0.7f);
 			controls.Append(colorText);
 			SkinEditorColorPalette colorPalette = new(() => settings.Color, SetColor)
 			{
-				Top = new StyleDimension(326f, 0f),
+				Top = new StyleDimension(310f, 0f),
 				Width = new StyleDimension(0f, 1f),
-				Height = new StyleDimension(76f, 0f)
+				Height = new StyleDimension(58f, 0f)
 			};
 			controls.Append(colorPalette);
 
-			UITextPanel<string> grid = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorGrid"), 0f, 0.20f, 410f);
-			grid.OnLeftClick += (_, _) => { settings.ShowGrid = !settings.ShowGrid; RefreshLabels(); };
-			controls.Append(grid);
-			UIText zoomHint = new(Language.GetTextValue("Mods.customskin.UI.EditorZoomHint"), 0.62f)
+			SkinEditorFreeColorPicker freeColorPicker = new(() => settings.Color, SetColor)
 			{
-				Left = new StyleDimension(0f, 0.21f),
-				Top = new StyleDimension(418f, 0f),
-				Width = new StyleDimension(0f, 0.21f),
-				Height = new StyleDimension(24f, 0f),
+				Top = new StyleDimension(374f, 0f),
+				Width = new StyleDimension(0f, 1f),
+				Height = new StyleDimension(82f, 0f)
+			};
+			controls.Append(freeColorPicker);
+
+			referenceText = Label(0f, 464f, 0.66f);
+			controls.Append(referenceText);
+			BuildReferenceControls(controls, 496f);
+
+			UIText operationHint = new(Language.GetTextValue("Mods.customskin.UI.EditorOperationHint"), 0.72f)
+			{
+				Left = new StyleDimension(18f, 0f),
+				Top = new StyleDimension(-116f, 1f),
+				Width = new StyleDimension(-36f, 1f),
+				Height = new StyleDimension(38f, 0f),
+				IsWrapped = true,
 				TextOriginX = 0.5f
 			};
-			controls.Append(zoomHint);
-			UITextPanel<string> undo = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorUndo"), 0.43f, 0.24f, 410f);
-			undo.OnLeftClick += (_, _) => Undo();
-			controls.Append(undo);
-			UITextPanel<string> redo = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorRedo"), 0.68f, 0.24f, 410f);
-			redo.OnLeftClick += (_, _) => Redo();
-			controls.Append(redo);
-
-			historyText = Label(0f, 448f, 0.66f);
-			controls.Append(historyText);
-
-			referenceText = Label(0f, 478f, 0.66f);
-			controls.Append(referenceText);
-			BuildReferenceControls(controls, 510f);
+			panel.Append(operationHint);
 
 			float bottom = -72f;
 			UITextPanel<string> save = PercentBottomButton(panel, Language.GetTextValue("Mods.customskin.UI.EditorSave"), 0.02f, 0.16f, bottom);
@@ -203,7 +268,6 @@ namespace customskin.Common.UI
 		public override void OnActivate()
 		{
 			previousKeys = Main.keyState;
-			SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorHint"), Color.Silver);
 		}
 
 		public override void OnDeactivate()
@@ -221,10 +285,13 @@ namespace customskin.Common.UI
 			if (playing)
 			{
 				playbackTicks++;
-				if (playbackTicks >= 8)
+				if (playbackTicks >= 6)
 				{
 					playbackTicks = 0;
-					settings.PoseIndex = (settings.PoseIndex + 1) % 20;
+					IReadOnlyList<(int GlobalIndex, SkinEditorPose Pose)> frames = GetGroupFrames(Pose.State);
+					int current = frames.ToList().FindIndex(frame => frame.GlobalIndex == settings.PoseIndex);
+					settings.PoseIndex = frames[(current + 1) % frames.Count].GlobalIndex;
+					BuildFrameButtons();
 					RefreshLabels();
 				}
 			}
@@ -233,8 +300,29 @@ namespace customskin.Common.UI
 		private void HandleShortcuts()
 		{
 			KeyboardState keys = Main.keyState;
+			if (projectNameInput.Focused)
+			{
+				referenceMoveRepeatTicks = 0;
+				previousKeys = keys;
+				return;
+			}
 			bool control = keys.IsKeyDown(Keys.LeftControl) || keys.IsKeyDown(Keys.RightControl);
 			bool shift = keys.IsKeyDown(Keys.LeftShift) || keys.IsKeyDown(Keys.RightShift);
+			if (canvas.HasFloatingSelection)
+			{
+				if (Pressed(keys, Keys.Enter)) CommitFloatingSelection();
+				else if (Pressed(keys, Keys.Escape)) CancelFloatingSelection();
+				else
+				{
+					int step = shift ? 5 : 1;
+					if (Pressed(keys, Keys.Left)) canvas.MoveFloatingSelection(-step, 0);
+					if (Pressed(keys, Keys.Right)) canvas.MoveFloatingSelection(step, 0);
+					if (Pressed(keys, Keys.Up)) canvas.MoveFloatingSelection(0, -step);
+					if (Pressed(keys, Keys.Down)) canvas.MoveFloatingSelection(0, step);
+				}
+				previousKeys = keys;
+				return;
+			}
 			if (control && Pressed(keys, Keys.Z)) Undo();
 			if (control && Pressed(keys, Keys.Y)) Redo();
 			if (control && Pressed(keys, Keys.S)) Save(apply: false);
@@ -275,26 +363,131 @@ namespace customskin.Common.UI
 		private bool Pressed(KeyboardState current, Keys key)
 			=> current.IsKeyDown(key) && !previousKeys.IsKeyDown(key);
 
-		private void ChangePose(int delta)
+		private IReadOnlyList<(int GlobalIndex, SkinEditorPose Pose)> GetGroupFrames(string state)
+			=> SkinEditorDocument.Poses
+				.Select((pose, index) => (GlobalIndex: index, Pose: pose))
+				.Where(frame => string.Equals(frame.Pose.State, state, StringComparison.Ordinal))
+				.ToArray();
+
+		private void BuildAnimationGroupButtons()
 		{
+			animationGroupHost.RemoveAllChildren();
+			for (int index = 0; index < AnimationStates.Length; index++)
+			{
+				string state = AnimationStates[index];
+				UITextPanel<string> button = StyledPercentButton(PoseStateName(state), index / (float)AnimationStates.Length,
+					1f / AnimationStates.Length, 0f, string.Equals(Pose.State, state, StringComparison.Ordinal));
+				button.OnLeftClick += (_, _) => SelectAnimationGroup(state);
+				animationGroupHost.Append(button);
+			}
+			animationGroupHost.Recalculate();
+		}
+
+		private void BuildFrameButtons()
+		{
+			frameHost.RemoveAllChildren();
+			IReadOnlyList<(int GlobalIndex, SkinEditorPose Pose)> frames = GetGroupFrames(Pose.State);
+			float width = frames.Count > 10 ? 0.075f : Math.Min(0.12f, 0.72f / frames.Count);
+			for (int index = 0; index < frames.Count; index++)
+			{
+				(int globalIndex, _) = frames[index];
+				UITextPanel<string> button = StyledPercentButton(FrameButtonName(frames[index].Pose, index), index * width, width, 0f,
+					globalIndex == settings.PoseIndex);
+				button.OnLeftClick += (_, _) => SelectFrame(globalIndex);
+				frameHost.Append(button);
+			}
+
+			int current = frames.ToList().FindIndex(frame => frame.GlobalIndex == settings.PoseIndex);
+			copyPreviousButton = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorCopyPrevious"), 0.60f, 0.19f, 38f);
+			copyPreviousButton.OnLeftClick += (_, _) => CopyToAdjacentFrame(-1);
+			ApplyReferenceActionStyle(copyPreviousButton, !playing && current > 0);
+			frameHost.Append(copyPreviousButton);
+			copyNextButton = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorCopyNext"), 0.80f, 0.19f, 38f);
+			copyNextButton.OnLeftClick += (_, _) => CopyToAdjacentFrame(1);
+			ApplyReferenceActionStyle(copyNextButton, !playing && current >= 0 && current < frames.Count - 1);
+			frameHost.Append(copyNextButton);
+			frameHost.Recalculate();
+		}
+
+		private void SelectAnimationGroup(string state)
+		{
+			if (string.Equals(Pose.State, state, StringComparison.Ordinal))
+				return;
 			EndStroke();
 			playing = false;
-			settings.PoseIndex = (settings.PoseIndex + delta + SkinEditorDocument.Poses.Count) % SkinEditorDocument.Poses.Count;
+			settings.PoseIndex = GetGroupFrames(state)[0].GlobalIndex;
 			pendingDiscard = false;
+			BuildAnimationGroupButtons();
+			BuildFrameButtons();
 			RefreshLabels();
+		}
+
+		private void SelectFrame(int globalIndex)
+		{
+			if (globalIndex == settings.PoseIndex)
+				return;
+			EndStroke();
+			playing = false;
+			settings.PoseIndex = globalIndex;
+			pendingDiscard = false;
+			BuildFrameButtons();
+			RefreshLabels();
+		}
+
+		private void CopyToAdjacentFrame(int delta)
+		{
+			if (canvas.HasFloatingSelection)
+			{
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorSelectionResolveFirst"), Color.Orange);
+				return;
+			}
+			EndStroke();
+			playing = false;
+			IReadOnlyList<(int GlobalIndex, SkinEditorPose Pose)> frames = GetGroupFrames(Pose.State);
+			int current = frames.ToList().FindIndex(frame => frame.GlobalIndex == settings.PoseIndex);
+			int targetIndex = current + delta;
+			if ((uint)targetIndex >= frames.Count)
+			{
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorCopyUnavailable",
+					delta < 0 ? Language.GetTextValue("Mods.customskin.UI.EditorPreviousFrame") : Language.GetTextValue("Mods.customskin.UI.EditorNextFrame")), Color.Orange);
+				BuildFrameButtons();
+				return;
+			}
+
+			SkinEditorPose source = Pose;
+			(int globalIndex, SkinEditorPose target) = frames[targetIndex];
+			bool sharedSlot = document.GetSlot(activePart, source, settings.Gender) == document.GetSlot(activePart, target, settings.Gender);
+			bool changed = !sharedSlot && document.CopyPartToPose(activePart, source, target, settings.Gender);
+			settings.PoseIndex = globalIndex;
+			pendingDiscard = false;
+			BuildFrameButtons();
+			BuildPaletteButtons();
+			RefreshLabels();
+			if (sharedSlot)
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorCopyShared", PartName(activePart), PoseName(source), PoseName(target)), Color.Orange);
+			else if (changed)
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorCopiedPart", PartName(activePart), PoseName(source), PoseName(target)), Color.LightGreen);
+			else
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorCopyUnchanged", PartName(activePart), PoseName(target)), Color.Silver);
 		}
 
 		private void BuildPartButtons()
 		{
 			partHost.RemoveAllChildren();
 			SkinEditorPart[] parts = Enum.GetValues<SkinEditorPart>();
+			float width = 1f / parts.Length;
 			for (int index = 0; index < parts.Length; index++)
 			{
 				SkinEditorPart part = parts[index];
 				bool selected = part == activePart;
-				float left = (index % 4) * 0.25f;
-				float top = (index / 4) * 38f;
-				UITextPanel<string> button = StyledPercentButton(PartName(part), left, 0.24f, top, selected);
+				UITextPanel<string> button = new(PartName(part), 0.66f)
+				{
+					Left = new StyleDimension(0f, index * width),
+					Width = new StyleDimension(-3f, width),
+					Height = new StyleDimension(28f, 0f),
+					TextColor = Color.White
+				};
+				ApplySelectedButtonStyle(button, selected);
 				button.OnLeftClick += (_, _) => SelectPart(part);
 				partHost.Append(button);
 			}
@@ -303,10 +496,16 @@ namespace customskin.Common.UI
 
 		private void SelectPart(SkinEditorPart part)
 		{
+			if (canvas.HasFloatingSelection)
+			{
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorSelectionResolveFirst"), Color.Orange);
+				return;
+			}
 			EndStroke();
 			activePart = part;
 			settings.Part = part;
 			playing = false;
+			BuildFrameButtons();
 			BuildPartButtons();
 			RefreshLabels();
 		}
@@ -318,19 +517,50 @@ namespace customskin.Common.UI
 			for (int index = 0; index < tools.Length; index++)
 			{
 				SkinEditorTool tool = tools[index];
-				bool selected = tool == settings.Tool;
-				UITextPanel<string> button = StyledPercentButton(ToolName(tool), index * 0.33f, 0.31f, 0f, selected);
-				button.OnLeftClick += (_, _) => { EndStroke(); settings.Tool = tool; BuildToolButtons(); RefreshLabels(); };
+				SkinEditorToolIconButton button = new(tool, () => settings.Tool == tool, ToolName(tool))
+				{
+					Left = new StyleDimension(0f, index * 0.052f),
+					Width = new StyleDimension(-3f, 0.048f),
+					Height = new StyleDimension(32f, 0f)
+				};
+				button.OnLeftClick += (_, _) => SelectTool(tool);
 				toolHost.Append(button);
 			}
+
+			UITextPanel<string> grid = StyledPercentButton(Language.GetTextValue("Mods.customskin.UI.EditorGrid"), 0.27f, 0.18f, 0f, settings.ShowGrid);
+			grid.OnLeftClick += (_, _) => { settings.ShowGrid = !settings.ShowGrid; BuildToolButtons(); RefreshLabels(); };
+			toolHost.Append(grid);
+			UITextPanel<string> background = StyledPercentButton(Language.GetTextValue("Mods.customskin.UI.EditorHideBackground"), 0.46f, 0.21f, 0f, !settings.ShowBackground);
+			background.OnLeftClick += (_, _) => { settings.ShowBackground = !settings.ShowBackground; BuildToolButtons(); RefreshLabels(); };
+			toolHost.Append(background);
+			confirmSelectionButton = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorSelectionConfirm"), 0.68f, 0.15f, 0f);
+			confirmSelectionButton.OnLeftClick += (_, _) => CommitFloatingSelection();
+			toolHost.Append(confirmSelectionButton);
+			cancelSelectionButton = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorSelectionCancel"), 0.84f, 0.15f, 0f);
+			cancelSelectionButton.OnLeftClick += (_, _) => CancelFloatingSelection();
+			toolHost.Append(cancelSelectionButton);
 			toolHost.Recalculate();
+		}
+
+		private void SelectTool(SkinEditorTool tool)
+		{
+			if (canvas.HasFloatingSelection && tool != settings.Tool)
+			{
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorSelectionResolveFirst"), Color.Orange);
+				return;
+			}
+			EndStroke();
+			playing = false;
+			settings.Tool = tool;
+			BuildToolButtons();
+			RefreshLabels();
 		}
 
 		private void BuildPaletteButtons()
 		{
 			paletteHost.RemoveAllChildren();
 			IReadOnlyList<SkinEditorColor> palette = recentColors
-				.Concat(document.ExtractPalette(10))
+				.Concat(commonColors)
 				.Where(color => color.A > 0)
 				.Distinct()
 				.Take(10)
@@ -366,12 +596,11 @@ namespace customskin.Common.UI
 			reload.OnLeftClick += (_, _) => ReloadReference(showStatus: true);
 			controls.Append(reload);
 			referenceVisibleButton = StyledPercentButton(Language.GetTextValue("Mods.customskin.UI.EditorReferenceVisible"), 0.42f, 0.18f, top,
-				referenceImage != null && settings.ReferenceVisible && settings.GetReferenceFrame(settings.PoseIndex).Visible);
+				referenceImage != null && settings.ReferenceVisible);
 			referenceVisibleButton.OnLeftClick += (_, _) =>
 			{
 				if (referenceImage == null) return;
-				SkinReferenceFrameSettings frame = settings.GetReferenceFrame(settings.PoseIndex);
-				frame.Visible = !frame.Visible;
+				settings.ReferenceVisible = !settings.ReferenceVisible;
 				RefreshLabels();
 			};
 			controls.Append(referenceVisibleButton);
@@ -382,29 +611,20 @@ namespace customskin.Common.UI
 			opacityUp.OnLeftClick += (_, _) => ChangeReferenceOpacity(16);
 			controls.Append(opacityUp);
 
-			UIText moveHint = new(Language.GetTextValue("Mods.customskin.UI.EditorReferenceMoveHint"), 0.62f)
-			{
-				Left = new StyleDimension(0f, 0f),
-				Top = new StyleDimension(top + 38f, 0f),
-				Width = new StyleDimension(0f, 1f),
-				TextOriginX = 0f
-			};
-			controls.Append(moveHint);
-
-			UITextPanel<string> mirror = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorReferenceMirror"), 0f, 0.25f, top + 66f);
+			UITextPanel<string> mirror = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorReferenceMirror"), 0f, 0.25f, top + 38f);
 			mirror.OnLeftClick += (_, _) => ToggleReferenceMirror();
 			controls.Append(mirror);
-			UITextPanel<string> reset = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorReferenceReset"), 0.26f, 0.25f, top + 66f);
+			UITextPanel<string> reset = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorReferenceReset"), 0.26f, 0.25f, top + 38f);
 			reset.OnLeftClick += (_, _) => ResetReferencePosition();
 			controls.Append(reset);
-			UITextPanel<string> folder = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorReferenceFolder"), 0.52f, 0.47f, top + 66f);
+			UITextPanel<string> folder = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorReferenceFolder"), 0.52f, 0.47f, top + 38f);
 			folder.OnLeftClick += (_, _) => OpenReferenceFolder();
 			controls.Append(folder);
 
-			referenceOverlayButton = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorReferenceOverlay"), 0f, 0.48f, top + 102f);
+			referenceOverlayButton = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorReferenceOverlay"), 0f, 0.48f, top + 74f);
 			referenceOverlayButton.OnLeftClick += (_, _) => ApplyReference(replace: false);
 			controls.Append(referenceOverlayButton);
-			referenceReplaceButton = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorReferenceReplace"), 0.49f, 0.49f, top + 102f);
+			referenceReplaceButton = PercentButton(Language.GetTextValue("Mods.customskin.UI.EditorReferenceReplace"), 0.49f, 0.49f, top + 74f);
 			referenceReplaceButton.OnLeftClick += (_, _) => ApplyReference(replace: true);
 			controls.Append(referenceReplaceButton);
 		}
@@ -510,7 +730,7 @@ namespace customskin.Common.UI
 				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorReferenceMissing", SkinCreatorSystem.ReferenceFileName), Color.Orange);
 				return;
 			}
-			if (!settings.ReferenceVisible || !settings.GetReferenceFrame(settings.PoseIndex).Visible)
+			if (!settings.ReferenceVisible)
 			{
 				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorReferenceShowRequired"), Color.OrangeRed);
 				return;
@@ -524,9 +744,8 @@ namespace customskin.Common.UI
 			{
 				// Hide the translucent source after committing so the author sees
 				// only the pixels that actually entered the runtime atlas.
-				frame.Visible = false;
+				settings.ReferenceVisible = false;
 				pendingDiscard = false;
-				BuildPaletteButtons();
 				int affectedPoseCount = document.GetAffectedPoses(targetPart, Pose, settings.Gender).Count;
 				SetStatus(Language.GetTextValue(replace
 					? "Mods.customskin.UI.EditorReferenceReplaced"
@@ -575,6 +794,35 @@ namespace customskin.Common.UI
 			RefreshLabels();
 		}
 
+		private void OnSelectionStateChanged()
+		{
+			BuildToolButtons();
+			RefreshLabels();
+			if (canvas.HasFloatingSelection)
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorSelectionReady"), Color.LightSkyBlue);
+		}
+
+		private void CommitFloatingSelection()
+		{
+			if (!canvas.HasFloatingSelection)
+				return;
+			bool changed = canvas.CommitFloatingSelection();
+			pendingDiscard = false;
+			BuildPaletteButtons();
+			RefreshLabels();
+			SetStatus(Language.GetTextValue(changed
+				? "Mods.customskin.UI.EditorSelectionCommitted"
+				: "Mods.customskin.UI.EditorSelectionUnchanged"), changed ? Color.LightGreen : Color.Silver);
+		}
+
+		private void CancelFloatingSelection()
+		{
+			if (!canvas.CancelFloatingSelection())
+				return;
+			RefreshLabels();
+			SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorSelectionCancelled"), Color.Silver);
+		}
+
 		private void RememberRecentColor(SkinEditorColor color)
 		{
 			if (color.A == 0)
@@ -593,18 +841,35 @@ namespace customskin.Common.UI
 
 		private void Undo()
 		{
+			if (canvas.HasFloatingSelection)
+			{
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorSelectionResolveFirst"), Color.Orange);
+				return;
+			}
 			playing = false;
+			BuildFrameButtons();
 			if (document.Undo()) { BuildPaletteButtons(); RefreshLabels(); }
 		}
 
 		private void Redo()
 		{
+			if (canvas.HasFloatingSelection)
+			{
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorSelectionResolveFirst"), Color.Orange);
+				return;
+			}
 			playing = false;
+			BuildFrameButtons();
 			if (document.Redo()) { BuildPaletteButtons(); RefreshLabels(); }
 		}
 
 		private void Save(bool apply)
 		{
+			if (canvas.HasFloatingSelection)
+			{
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorSelectionResolveFirst"), Color.Orange);
+				return;
+			}
 			try
 			{
 				playing = false;
@@ -630,6 +895,21 @@ namespace customskin.Common.UI
 			}
 		}
 
+		private void RenameProject()
+		{
+			try
+			{
+				Creator.RenameProject(project, projectNameInput.CurrentString);
+				projectNameInput.SetText(project.DisplayName);
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorProjectRenamed", project.DisplayName), Color.LightGreen);
+			}
+			catch (Exception exception) when (exception is not OutOfMemoryException)
+			{
+				projectNameInput.SetText(project.DisplayName);
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorProjectRenameFailed", exception.Message), Color.OrangeRed);
+			}
+		}
+
 		private void Export()
 		{
 			try
@@ -648,6 +928,11 @@ namespace customskin.Common.UI
 
 		private void Reload()
 		{
+			if (canvas.HasFloatingSelection)
+			{
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorSelectionResolveFirst"), Color.Orange);
+				return;
+			}
 			if (document.IsDirty)
 			{
 				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorReloadDirty"), Color.OrangeRed);
@@ -658,6 +943,11 @@ namespace customskin.Common.UI
 
 		private void Back()
 		{
+			if (canvas.HasFloatingSelection)
+			{
+				SetStatus(Language.GetTextValue("Mods.customskin.UI.EditorSelectionResolveFirst"), Color.Orange);
+				return;
+			}
 			EndStroke();
 			if (document.IsDirty && !pendingDiscard)
 			{
@@ -670,9 +960,7 @@ namespace customskin.Common.UI
 
 		private void RefreshLabels()
 		{
-			if (poseText == null) return;
-			poseText.SetText(Language.GetTextValue("Mods.customskin.UI.EditorPoseNoGender", PoseName(Pose), settings.PoseIndex + 1, SkinEditorDocument.Poses.Count,
-				settings.MirrorPreview ? Language.GetTextValue("Mods.customskin.UI.EditorLeft") : Language.GetTextValue("Mods.customskin.UI.EditorRight")));
+			if (slotText == null) return;
 			slotText.SetText(Language.GetTextValue("Mods.customskin.UI.EditorSlots",
 				document.GetSlot(SkinEditorPart.Head, Pose, settings.Gender),
 				document.GetSlot(SkinEditorPart.Torso, Pose, settings.Gender),
@@ -686,11 +974,14 @@ namespace customskin.Common.UI
 			affectedText.SetText(Language.GetTextValue("Mods.customskin.UI.EditorAffected", PartName(activePart),
 				document.GetSlot(activePart, Pose, settings.Gender), affected.Count, affectedGroups));
 			SkinEditorColor color = settings.Color;
-			colorText.SetText(Language.GetTextValue("Mods.customskin.UI.EditorColor", color.R, color.G, color.B, color.A));
+			colorText.SetText(Language.GetTextValue("Mods.customskin.UI.EditorColor", color.R, color.G, color.B, color.A) + " · " +
+				Language.GetTextValue("Mods.customskin.UI.EditorUndo") + $" {document.UndoStrokeCount}/{SkinEditorDocument.MaxUndoStrokes}");
 			colorText.TextColor = ToColor(color.A == 0 ? new SkinEditorColor(180, 180, 180, 255) : color);
-			historyText.SetText(Language.GetTextValue("Mods.customskin.UI.EditorHistory", document.UndoStrokeCount, SkinEditorDocument.MaxUndoStrokes,
-				document.UndoBytes / 1024, SkinEditorDocument.MaxUndoBytes / 1024, settings.Zoom,
-				document.IsDirty ? Language.GetTextValue("Mods.customskin.UI.EditorDirty") : Language.GetTextValue("Mods.customskin.UI.EditorClean")));
+			if (confirmSelectionButton != null)
+			{
+				ApplyReferenceActionStyle(confirmSelectionButton, canvas.HasFloatingSelection);
+				ApplyReferenceActionStyle(cancelSelectionButton, canvas.HasFloatingSelection);
+			}
 			if (referenceText != null)
 			{
 				if (referenceImage == null)
@@ -705,10 +996,9 @@ namespace customskin.Common.UI
 							? Language.GetTextValue("Mods.customskin.UI.EditorReferenceMirrored")
 							: Language.GetTextValue("Mods.customskin.UI.EditorReferenceNormal")));
 				}
-				ApplySelectedButtonStyle(referenceVisibleButton, referenceImage != null && settings.ReferenceVisible &&
-					settings.GetReferenceFrame(settings.PoseIndex).Visible);
+				ApplySelectedButtonStyle(referenceVisibleButton, referenceImage != null && settings.ReferenceVisible);
 				bool canApplyReference = referenceImage != null && settings.ReferenceVisible &&
-					settings.GetReferenceFrame(settings.PoseIndex).Visible && !playing;
+					!playing;
 				ApplyReferenceActionStyle(referenceOverlayButton, canApplyReference);
 				ApplyReferenceActionStyle(referenceReplaceButton, canApplyReference);
 			}
@@ -831,8 +1121,111 @@ namespace customskin.Common.UI
 				"jump-air" => Language.GetTextValue("Mods.customskin.UI.EditorPoses.JumpAir", pose.BodyFrame - 4),
 				"ground-move" => Language.GetTextValue("Mods.customskin.UI.EditorPoses.GroundMove", pose.BodyFrame - 6),
 				"weapon-arm" => Language.GetTextValue("Mods.customskin.UI.EditorPoses.WeaponArm", pose.Name.Replace("Weapon Arm ", string.Empty)),
-				_ => Language.GetTextValue("Mods.customskin.UI.EditorPoses.NativeLegs", pose.LegFrame)
+				_ => pose.LegFrame == 6
+					? Language.GetTextValue("Mods.customskin.UI.EditorPoses.MountLegs")
+					: Language.GetTextValue("Mods.customskin.UI.EditorPoses.CompatibilityLegs", pose.LegFrame)
 			};
+		}
+
+		private static string FrameButtonName(SkinEditorPose pose, int groupIndex)
+		{
+			if (pose.State != "native-special")
+				return (groupIndex + 1).ToString();
+			return pose.LegFrame == 6
+				? Language.GetTextValue("Mods.customskin.UI.EditorFrameMount")
+				: Language.GetTextValue("Mods.customskin.UI.EditorFrameCompatibility", pose.LegFrame);
+		}
+	}
+
+	internal sealed class SkinEditorToolIconButton : UIElement
+	{
+		private readonly SkinEditorTool tool;
+		private readonly Func<bool> selected;
+		private readonly string tooltip;
+
+		public SkinEditorToolIconButton(SkinEditorTool tool, Func<bool> selected, string tooltip)
+		{
+			this.tool = tool;
+			this.selected = selected;
+			this.tooltip = tooltip;
+		}
+
+		public override void Update(GameTime gameTime)
+		{
+			base.Update(gameTime);
+			if (IsMouseHovering)
+				Main.LocalPlayer.mouseInterface = true;
+		}
+
+		protected override void DrawSelf(SpriteBatch spriteBatch)
+		{
+			base.DrawSelf(spriteBatch);
+			Rectangle bounds = GetDimensions().ToRectangle();
+			Color background = selected() ? new Color(40, 112, 102, 245) :
+				IsMouseHovering ? new Color(83, 98, 155, 240) : new Color(63, 77, 130, 225);
+			Color border = selected() ? new Color(255, 210, 92) : new Color(18, 24, 48);
+			spriteBatch.Draw(TextureAssets.MagicPixel.Value, bounds, background);
+			DrawOutline(spriteBatch, bounds, border);
+
+			int centerX = bounds.Center.X;
+			int centerY = bounds.Center.Y;
+			switch (tool)
+			{
+				case SkinEditorTool.Pencil:
+					DrawPixel(spriteBatch, centerX - 9, centerY + 5, 7, new Color(18, 24, 42));
+					DrawPixel(spriteBatch, centerX - 5, centerY + 1, 7, new Color(18, 24, 42));
+					DrawPixel(spriteBatch, centerX - 1, centerY - 3, 7, new Color(18, 24, 42));
+					DrawPixel(spriteBatch, centerX + 3, centerY - 7, 7, new Color(18, 24, 42));
+					DrawPixel(spriteBatch, centerX - 7, centerY + 7, 3, new Color(255, 244, 190));
+					DrawPixel(spriteBatch, centerX - 3, centerY + 3, 4, new Color(48, 215, 235));
+					DrawPixel(spriteBatch, centerX + 1, centerY - 1, 4, new Color(58, 180, 232));
+					DrawPixel(spriteBatch, centerX + 5, centerY - 5, 4, new Color(240, 246, 255));
+					break;
+				case SkinEditorTool.Eraser:
+					spriteBatch.Draw(TextureAssets.MagicPixel.Value, new Rectangle(centerX - 8, centerY - 5, 16, 11), new Color(240, 102, 146));
+					spriteBatch.Draw(TextureAssets.MagicPixel.Value, new Rectangle(centerX + 2, centerY - 5, 6, 11), new Color(245, 235, 238));
+					DrawOutline(spriteBatch, new Rectangle(centerX - 8, centerY - 5, 16, 11), new Color(34, 25, 50));
+					break;
+				case SkinEditorTool.Eyedropper:
+					DrawPixel(spriteBatch, centerX - 7, centerY + 5, 5, new Color(67, 220, 229));
+					DrawPixel(spriteBatch, centerX - 3, centerY + 1, 4, new Color(198, 211, 224));
+					DrawPixel(spriteBatch, centerX, centerY - 2, 4, new Color(198, 211, 224));
+					DrawPixel(spriteBatch, centerX + 3, centerY - 5, 5, new Color(64, 70, 88));
+					break;
+				case SkinEditorTool.RectangleMove:
+					DrawRectangleIcon(spriteBatch, centerX - 9, centerY - 7, new Color(90, 225, 235));
+					spriteBatch.Draw(TextureAssets.MagicPixel.Value, new Rectangle(centerX - 2, centerY - 1, 11, 2), Color.White);
+					spriteBatch.Draw(TextureAssets.MagicPixel.Value, new Rectangle(centerX + 5, centerY - 4, 2, 8), Color.White);
+					break;
+				case SkinEditorTool.RectangleCopy:
+					DrawRectangleIcon(spriteBatch, centerX - 7, centerY - 5, new Color(100, 205, 245));
+					DrawRectangleIcon(spriteBatch, centerX - 2, centerY - 9, new Color(255, 230, 110));
+					break;
+			}
+
+			if (IsMouseHovering)
+				UICommon.TooltipMouseText(tooltip);
+		}
+
+		private static void DrawPixel(SpriteBatch spriteBatch, int x, int y, int size, Color color) =>
+			spriteBatch.Draw(TextureAssets.MagicPixel.Value, new Rectangle(x, y, size, size), color);
+
+		private static void DrawRectangleIcon(SpriteBatch spriteBatch, int x, int y, Color color)
+		{
+			Texture2D pixel = TextureAssets.MagicPixel.Value;
+			spriteBatch.Draw(pixel, new Rectangle(x, y, 12, 2), color);
+			spriteBatch.Draw(pixel, new Rectangle(x, y + 10, 12, 2), color);
+			spriteBatch.Draw(pixel, new Rectangle(x, y, 2, 12), color);
+			spriteBatch.Draw(pixel, new Rectangle(x + 10, y, 2, 12), color);
+		}
+
+		private static void DrawOutline(SpriteBatch spriteBatch, Rectangle rectangle, Color color)
+		{
+			Texture2D pixel = TextureAssets.MagicPixel.Value;
+			spriteBatch.Draw(pixel, new Rectangle(rectangle.X, rectangle.Y, rectangle.Width, 2), color);
+			spriteBatch.Draw(pixel, new Rectangle(rectangle.X, rectangle.Bottom - 2, rectangle.Width, 2), color);
+			spriteBatch.Draw(pixel, new Rectangle(rectangle.X, rectangle.Y, 2, rectangle.Height), color);
+			spriteBatch.Draw(pixel, new Rectangle(rectangle.Right - 2, rectangle.Y, 2, rectangle.Height), color);
 		}
 	}
 
@@ -966,6 +1359,195 @@ namespace customskin.Common.UI
 		}
 	}
 
+	internal sealed class SkinEditorFreeColorPicker : UIElement
+	{
+		private const int SaturationSteps = 32;
+		private const int ValueSteps = 12;
+		private const int HueSteps = 24;
+		private const int AlphaSteps = 16;
+		private readonly Func<SkinEditorColor> currentColor;
+		private readonly Action<SkinEditorColor> selected;
+		private float hue;
+
+		public SkinEditorFreeColorPicker(Func<SkinEditorColor> currentColor, Action<SkinEditorColor> selected)
+		{
+			this.currentColor = currentColor;
+			this.selected = selected;
+			(hue, _, _) = ToHsv(currentColor());
+		}
+
+		public override void Update(GameTime gameTime)
+		{
+			base.Update(gameTime);
+			bool left = Main.mouseLeft;
+			if (IsMouseHovering)
+			{
+				Main.LocalPlayer.mouseInterface = true;
+				if (left)
+					SelectAtMouse();
+			}
+		}
+
+		protected override void DrawSelf(SpriteBatch spriteBatch)
+		{
+			base.DrawSelf(spriteBatch);
+			Rectangle bounds = GetDimensions().ToRectangle();
+			GetRegions(bounds, out Rectangle spectrum, out Rectangle hueStrip, out Rectangle alphaStrip);
+			(float currentHue, float currentSaturation, float currentValue) = ToHsv(currentColor());
+			if (currentSaturation > 0.001f)
+				hue = currentHue;
+			spriteBatch.Draw(TextureAssets.MagicPixel.Value, bounds, new Color(12, 17, 34));
+
+			for (int y = 0; y < ValueSteps; y++)
+			{
+				float value = 1f - (y + 0.5f) / ValueSteps;
+				for (int x = 0; x < SaturationSteps; x++)
+				{
+					float saturation = (x + 0.5f) / SaturationSteps;
+					Rectangle cell = StepRectangle(spectrum, x, y, SaturationSteps, ValueSteps);
+					spriteBatch.Draw(TextureAssets.MagicPixel.Value, cell, ToColor(hue, saturation, value, 255));
+				}
+			}
+			for (int y = 0; y < HueSteps; y++)
+			{
+				Rectangle cell = StepRectangle(hueStrip, 0, y, 1, HueSteps);
+				spriteBatch.Draw(TextureAssets.MagicPixel.Value, cell, ToColor((y + 0.5f) / HueSteps, 1f, 1f, 255));
+			}
+			SkinEditorColor current = currentColor();
+			for (int y = 0; y < AlphaSteps; y++)
+			{
+				Rectangle cell = StepRectangle(alphaStrip, 0, y, 1, AlphaSteps);
+				Color checker = y % 2 == 0 ? new Color(205, 205, 205) : new Color(105, 105, 105);
+				spriteBatch.Draw(TextureAssets.MagicPixel.Value, cell, checker);
+				byte alpha = (byte)Math.Round(255f * (AlphaSteps - y - 0.5f) / AlphaSteps);
+				spriteBatch.Draw(TextureAssets.MagicPixel.Value, cell, new Color(current.R, current.G, current.B, alpha));
+			}
+
+			DrawOutline(spriteBatch, spectrum, new Color(18, 24, 48));
+			DrawOutline(spriteBatch, hueStrip, new Color(18, 24, 48));
+			DrawOutline(spriteBatch, alphaStrip, new Color(18, 24, 48));
+			int markerX = spectrum.X + (int)Math.Round(currentSaturation * Math.Max(1, spectrum.Width - 1));
+			int markerY = spectrum.Y + (int)Math.Round((1f - currentValue) * Math.Max(1, spectrum.Height - 1));
+			DrawOutline(spriteBatch, new Rectangle(markerX - 3, markerY - 3, 7, 7), Color.White);
+			int hueY = hueStrip.Y + (int)Math.Round(hue * Math.Max(1, hueStrip.Height - 1));
+			DrawOutline(spriteBatch, new Rectangle(hueStrip.X - 2, hueY - 2, hueStrip.Width + 4, 5), new Color(255, 210, 70));
+			int alphaY = alphaStrip.Y + (int)Math.Round((1f - current.A / 255f) * Math.Max(1, alphaStrip.Height - 1));
+			DrawOutline(spriteBatch, new Rectangle(alphaStrip.X - 2, alphaY - 2, alphaStrip.Width + 4, 5), Color.White);
+			DrawAlphaLabel(spriteBatch, alphaStrip);
+		}
+
+		private void SelectAtMouse()
+		{
+			Rectangle bounds = GetDimensions().ToRectangle();
+			GetRegions(bounds, out Rectangle spectrum, out Rectangle hueStrip, out Rectangle alphaStrip);
+			SkinEditorColor current = currentColor();
+			(_, float saturation, float value) = ToHsv(current);
+			Point mouse = new(Main.mouseX, Main.mouseY);
+			if (hueStrip.Contains(mouse))
+			{
+				hue = Math.Clamp((Main.mouseY - hueStrip.Y) / (float)Math.Max(1, hueStrip.Height - 1), 0f, 1f);
+				if (saturation < 0.01f) saturation = 1f;
+				if (value < 0.01f) value = 1f;
+			}
+			else if (spectrum.Contains(mouse))
+			{
+				saturation = Math.Clamp((Main.mouseX - spectrum.X) / (float)Math.Max(1, spectrum.Width - 1), 0f, 1f);
+				value = 1f - Math.Clamp((Main.mouseY - spectrum.Y) / (float)Math.Max(1, spectrum.Height - 1), 0f, 1f);
+			}
+			else if (alphaStrip.Contains(mouse))
+			{
+				byte alpha = (byte)Math.Round(255f * (1f - Math.Clamp((Main.mouseY - alphaStrip.Y) /
+					(float)Math.Max(1, alphaStrip.Height - 1), 0f, 1f)));
+				selected(current with { A = alpha });
+				return;
+			}
+			else
+			{
+				return;
+			}
+			selected(FromColor(ToColor(hue, saturation, value, current.A)));
+		}
+
+		private static void GetRegions(Rectangle bounds, out Rectangle spectrum, out Rectangle hueStrip, out Rectangle alphaStrip)
+		{
+			int stripWidth = Math.Max(14, bounds.Width / 15);
+			spectrum = new Rectangle(bounds.X + 2, bounds.Y + 2, Math.Max(1, bounds.Width - stripWidth * 2 - 16), Math.Max(1, bounds.Height - 4));
+			hueStrip = new Rectangle(spectrum.Right + 6, bounds.Y + 2, stripWidth, Math.Max(1, bounds.Height - 4));
+			alphaStrip = new Rectangle(hueStrip.Right + 6, bounds.Y + 2, stripWidth, Math.Max(1, bounds.Height - 4));
+		}
+
+		private static Rectangle StepRectangle(Rectangle bounds, int x, int y, int columns, int rows)
+		{
+			int left = bounds.X + x * bounds.Width / columns;
+			int right = bounds.X + (x + 1) * bounds.Width / columns;
+			int top = bounds.Y + y * bounds.Height / rows;
+			int bottom = bounds.Y + (y + 1) * bounds.Height / rows;
+			return new Rectangle(left, top, Math.Max(1, right - left), Math.Max(1, bottom - top));
+		}
+
+		private static (float Hue, float Saturation, float Value) ToHsv(SkinEditorColor color)
+		{
+			float red = color.R / 255f;
+			float green = color.G / 255f;
+			float blue = color.B / 255f;
+			float maximum = Math.Max(red, Math.Max(green, blue));
+			float minimum = Math.Min(red, Math.Min(green, blue));
+			float delta = maximum - minimum;
+			float calculatedHue = 0f;
+			if (delta > 0.0001f)
+			{
+				if (maximum == red) calculatedHue = ((green - blue) / delta) % 6f;
+				else if (maximum == green) calculatedHue = (blue - red) / delta + 2f;
+				else calculatedHue = (red - green) / delta + 4f;
+				calculatedHue /= 6f;
+				if (calculatedHue < 0f) calculatedHue += 1f;
+			}
+			return (calculatedHue, maximum <= 0f ? 0f : delta / maximum, maximum);
+		}
+
+		private static Color ToColor(float hue, float saturation, float value, byte alpha)
+		{
+			float section = (hue - MathF.Floor(hue)) * 6f;
+			float chroma = value * saturation;
+			float secondary = chroma * (1f - Math.Abs(section % 2f - 1f));
+			(float red, float green, float blue) = section switch
+			{
+				< 1f => (chroma, secondary, 0f),
+				< 2f => (secondary, chroma, 0f),
+				< 3f => (0f, chroma, secondary),
+				< 4f => (0f, secondary, chroma),
+				< 5f => (secondary, 0f, chroma),
+				_ => (chroma, 0f, secondary)
+			};
+			float match = value - chroma;
+			return new Color((byte)Math.Round((red + match) * 255f), (byte)Math.Round((green + match) * 255f),
+				(byte)Math.Round((blue + match) * 255f), alpha);
+		}
+
+		private static SkinEditorColor FromColor(Color color) => new(color.R, color.G, color.B, color.A);
+
+		private static void DrawAlphaLabel(SpriteBatch spriteBatch, Rectangle strip)
+		{
+			Texture2D pixel = TextureAssets.MagicPixel.Value;
+			int left = strip.Center.X - 4;
+			int top = strip.Y + 4;
+			Color color = Color.Black;
+			spriteBatch.Draw(pixel, new Rectangle(left, top + 2, 2, 9), color);
+			spriteBatch.Draw(pixel, new Rectangle(left + 6, top + 2, 2, 9), color);
+			spriteBatch.Draw(pixel, new Rectangle(left + 2, top, 4, 2), color);
+			spriteBatch.Draw(pixel, new Rectangle(left + 2, top + 5, 4, 2), color);
+		}
+
+		private static void DrawOutline(SpriteBatch spriteBatch, Rectangle rectangle, Color color)
+		{
+			Texture2D pixel = TextureAssets.MagicPixel.Value;
+			spriteBatch.Draw(pixel, new Rectangle(rectangle.X, rectangle.Y, rectangle.Width, 2), color);
+			spriteBatch.Draw(pixel, new Rectangle(rectangle.X, rectangle.Bottom - 2, rectangle.Width, 2), color);
+			spriteBatch.Draw(pixel, new Rectangle(rectangle.X, rectangle.Y, 2, rectangle.Height), color);
+			spriteBatch.Draw(pixel, new Rectangle(rectangle.Right - 2, rectangle.Y, 2, rectangle.Height), color);
+		}
+	}
+
 	internal sealed class SkinEditorTextInput : UIPanel
 	{
 		private readonly UIText textElement;
@@ -996,6 +1578,7 @@ namespace customskin.Common.UI
 		public bool Focused { get; private set; }
 		public string CurrentString => currentString;
 		public event Action? Submitted;
+		public event Action? Cancelled;
 
 		public void SetText(string value)
 		{
@@ -1009,7 +1592,10 @@ namespace customskin.Common.UI
 			base.Update(gameTime);
 			bool left = Main.mouseLeft;
 			if (Focused && left && !previousMouseLeft && !IsMouseHovering)
+			{
 				Unfocus();
+				Submitted?.Invoke();
+			}
 			previousMouseLeft = left;
 
 			if (!Focused)
@@ -1045,6 +1631,7 @@ namespace customskin.Common.UI
 			else if (Pressed(keys, Keys.Escape))
 			{
 				Unfocus();
+				Cancelled?.Invoke();
 			}
 			previousKeys = keys;
 		}
@@ -1087,8 +1674,18 @@ namespace customskin.Common.UI
 		private readonly Func<SkinReferenceFrameSettings> referenceFrame;
 		private readonly Action changed;
 		private readonly Action<SkinEditorColor> colorPicked;
+		private readonly Action selectionChanged;
 		private bool previousLeft;
 		private bool drawing;
+		private bool selecting;
+		private bool draggingSelection;
+		private int selectionStartX;
+		private int selectionStartY;
+		private int selectionEndX;
+		private int selectionEndY;
+		private int selectionDragOffsetX;
+		private int selectionDragOffsetY;
+		private FloatingSelection? floatingSelection;
 		private int lastPixelX = -1;
 		private int lastPixelY = -1;
 		private int previousWheel;
@@ -1102,7 +1699,7 @@ namespace customskin.Common.UI
 
 		public SkinEditorCanvas(SkinEditorDocument document, SkinEditorSettings settings, Func<SkinEditorPart> part, Func<SkinEditorPose> pose,
 			Func<SkinReferenceImage?> reference, Func<SkinReferenceFrameSettings> referenceFrame,
-			Action changed, Action<SkinEditorColor> colorPicked)
+			Action changed, Action<SkinEditorColor> colorPicked, Action selectionChanged)
 		{
 			this.document = document;
 			this.settings = settings;
@@ -1112,7 +1709,42 @@ namespace customskin.Common.UI
 			this.referenceFrame = referenceFrame;
 			this.changed = changed;
 			this.colorPicked = colorPicked;
+			this.selectionChanged = selectionChanged;
 			OverflowHidden = true;
+		}
+
+		public bool HasFloatingSelection => floatingSelection != null;
+
+		public void MoveFloatingSelection(int deltaX, int deltaY)
+		{
+			if (floatingSelection == null) return;
+			floatingSelection.DestinationX = Math.Clamp(floatingSelection.DestinationX + deltaX,
+				-floatingSelection.Width + 1, SkinEditorDocument.CellWidth - 1);
+			floatingSelection.DestinationY = Math.Clamp(floatingSelection.DestinationY + deltaY,
+				-floatingSelection.Height + 1, SkinEditorDocument.CellHeight - 1);
+		}
+
+		public bool CommitFloatingSelection()
+		{
+			if (floatingSelection == null) return false;
+			FloatingSelection selection = floatingSelection;
+			bool changedDocument = document.ApplyFloatingSelection(selection.Part, selection.SourcePose, pose(), selection.Gender,
+				selection.SourceX, selection.SourceY, selection.Width, selection.Height, selection.Pixels,
+				selection.DestinationX, selection.DestinationY, selection.SourceMirror, settings.MirrorPreview, selection.Move);
+			floatingSelection = null;
+			selecting = draggingSelection = false;
+			if (changedDocument) changed();
+			selectionChanged();
+			return changedDocument;
+		}
+
+		public bool CancelFloatingSelection()
+		{
+			if (floatingSelection == null && !selecting) return false;
+			floatingSelection = null;
+			selecting = draggingSelection = false;
+			selectionChanged();
+			return true;
 		}
 
 		public override void Update(GameTime gameTime)
@@ -1133,6 +1765,12 @@ namespace customskin.Common.UI
 			}
 
 			bool left = Main.mouseLeft;
+			if (settings.Tool is SkinEditorTool.RectangleMove or SkinEditorTool.RectangleCopy)
+			{
+				HandleSelectionInput(left);
+				previousLeft = left;
+				return;
+			}
 			if (!Main.hasFocus || !IsMouseHovering)
 			{
 				if (drawing) FinishStroke();
@@ -1169,6 +1807,101 @@ namespace customskin.Common.UI
 			previousLeft = left;
 		}
 
+		private void HandleSelectionInput(bool left)
+		{
+			if (!Main.hasFocus)
+			{
+				draggingSelection = false;
+				return;
+			}
+			if (floatingSelection != null)
+			{
+				if (!IsMouseHovering)
+				{
+					if (!left) draggingSelection = false;
+					return;
+				}
+				if (left && !previousLeft && TryMouseVisualPixel(out int pressedX, out int pressedY) &&
+					pressedX >= floatingSelection.DestinationX && pressedX < floatingSelection.DestinationX + floatingSelection.Width &&
+					pressedY >= floatingSelection.DestinationY && pressedY < floatingSelection.DestinationY + floatingSelection.Height)
+				{
+					draggingSelection = true;
+					selectionDragOffsetX = pressedX - floatingSelection.DestinationX;
+					selectionDragOffsetY = pressedY - floatingSelection.DestinationY;
+				}
+				if (left && draggingSelection && TryMouseVisualPixel(out int dragX, out int dragY))
+				{
+					floatingSelection.DestinationX = Math.Clamp(dragX - selectionDragOffsetX,
+						-floatingSelection.Width + 1, SkinEditorDocument.CellWidth - 1);
+					floatingSelection.DestinationY = Math.Clamp(dragY - selectionDragOffsetY,
+						-floatingSelection.Height + 1, SkinEditorDocument.CellHeight - 1);
+				}
+				if (!left) draggingSelection = false;
+				return;
+			}
+
+			if (left && !previousLeft && IsMouseHovering && TryMouseVisualPixel(out int startX, out int startY))
+			{
+				selecting = true;
+				selectionStartX = selectionEndX = startX;
+				selectionStartY = selectionEndY = startY;
+			}
+			else if (left && selecting && TryMouseVisualPixel(out int endX, out int endY))
+			{
+				selectionEndX = endX;
+				selectionEndY = endY;
+			}
+			else if (!left && selecting)
+			{
+				CaptureFloatingSelection();
+				selecting = false;
+			}
+		}
+
+		private void CaptureFloatingSelection()
+		{
+			int left = Math.Min(selectionStartX, selectionEndX);
+			int top = Math.Min(selectionStartY, selectionEndY);
+			int right = Math.Max(selectionStartX, selectionEndX);
+			int bottom = Math.Max(selectionStartY, selectionEndY);
+			int width = right - left + 1;
+			int height = bottom - top + 1;
+			SkinEditorColor[] pixels = new SkinEditorColor[width * height];
+			bool hasVisiblePixel = false;
+			for (int y = 0; y < height; y++)
+			{
+				for (int x = 0; x < width; x++)
+				{
+					int visualX = left + x;
+					int sourceX = settings.MirrorPreview ? SkinEditorDocument.CellWidth - 1 - visualX : visualX;
+					SkinEditorColor color = document.ReadTargetPixel(part(), pose(), settings.Gender, sourceX, top + y);
+					pixels[y * width + x] = color;
+					hasVisiblePixel |= color.A > 0;
+				}
+			}
+			if (!hasVisiblePixel)
+			{
+				selectionChanged();
+				return;
+			}
+			floatingSelection = new FloatingSelection
+			{
+				Part = part(),
+				SourcePose = pose(),
+				Gender = settings.Gender,
+				SourceMirror = settings.MirrorPreview,
+				Move = settings.Tool == SkinEditorTool.RectangleMove,
+				SourceX = left,
+				SourceY = top,
+				Width = width,
+				Height = height,
+				DestinationX = left,
+				DestinationY = top,
+				Pixels = pixels
+			};
+			selectionChanged();
+		}
+
 		protected override void DrawSelf(SpriteBatch spriteBatch)
 		{
 			base.DrawSelf(spriteBatch);
@@ -1198,8 +1931,11 @@ namespace customskin.Common.UI
 				for (int x = 0; x < SkinEditorDocument.CellWidth; x++)
 				{
 					Rectangle pixel = new(canvas.X + x * zoom, canvas.Y + y * zoom, zoom, zoom);
-					Color checker = ((x + y) & 1) == 0 ? new Color(55, 59, 76) : new Color(75, 79, 96);
-					spriteBatch.Draw(TextureAssets.MagicPixel.Value, pixel, checker);
+					if (settings.ShowBackground)
+					{
+						Color checker = ((x + y) & 1) == 0 ? new Color(55, 59, 76) : new Color(75, 79, 96);
+						spriteBatch.Draw(TextureAssets.MagicPixel.Value, pixel, checker);
+					}
 					int offset = (y * SkinEditorDocument.CellWidth + x) * 4;
 					if (composite[offset + 3] != 0)
 						spriteBatch.Draw(TextureAssets.MagicPixel.Value, pixel,
@@ -1210,22 +1946,20 @@ namespace customskin.Common.UI
 			if (currentReference != null && settings.ReferenceVisible)
 			{
 				SkinReferenceFrameSettings frame = referenceFrame();
-				if (frame.Visible)
+				for (int y = 0; y < SkinEditorDocument.CellHeight; y++)
 				{
-					for (int y = 0; y < SkinEditorDocument.CellHeight; y++)
+					for (int x = 0; x < SkinEditorDocument.CellWidth; x++)
 					{
-						for (int x = 0; x < SkinEditorDocument.CellWidth; x++)
-						{
-							if (!currentReference.TryReadCanvasPixel(x, y, frame.OffsetX, frame.OffsetY, frame.Mirror, out SkinEditorColor source) || source.A == 0)
-								continue;
-							byte alpha = (byte)((source.A * settings.ReferenceOpacity + 127) / 255);
-							if (alpha == 0) continue;
-							Rectangle pixel = new(canvas.X + x * zoom, canvas.Y + y * zoom, zoom, zoom);
-							spriteBatch.Draw(TextureAssets.MagicPixel.Value, pixel, new Color(source.R, source.G, source.B, alpha));
-						}
+						if (!currentReference.TryReadCanvasPixel(x, y, frame.OffsetX, frame.OffsetY, frame.Mirror, out SkinEditorColor source) || source.A == 0)
+							continue;
+						byte alpha = (byte)((source.A * settings.ReferenceOpacity + 127) / 255);
+						if (alpha == 0) continue;
+						Rectangle pixel = new(canvas.X + x * zoom, canvas.Y + y * zoom, zoom, zoom);
+						spriteBatch.Draw(TextureAssets.MagicPixel.Value, pixel, new Color(source.R, source.G, source.B, alpha));
 					}
 				}
 			}
+			DrawSelectionLayer(spriteBatch, canvas, zoom);
 			if (settings.ShowGrid && zoom >= 4)
 			{
 				Color grid = new(0, 0, 0, 80);
@@ -1257,6 +1991,59 @@ namespace customskin.Common.UI
 			return true;
 		}
 
+		private bool TryMouseVisualPixel(out int x, out int y)
+		{
+			Rectangle canvas = GetCanvasRectangle();
+			int zoom = canvas.Width / SkinEditorDocument.CellWidth;
+			x = (Main.mouseX - canvas.X) / zoom;
+			y = (Main.mouseY - canvas.Y) / zoom;
+			return canvas.Contains(Main.mouseX, Main.mouseY);
+		}
+
+		private void DrawSelectionLayer(SpriteBatch spriteBatch, Rectangle canvas, int zoom)
+		{
+			if (floatingSelection != null)
+			{
+				for (int y = 0; y < floatingSelection.Height; y++)
+				{
+					for (int x = 0; x < floatingSelection.Width; x++)
+					{
+						int destinationX = floatingSelection.DestinationX + x;
+						int destinationY = floatingSelection.DestinationY + y;
+						if ((uint)destinationX >= SkinEditorDocument.CellWidth || (uint)destinationY >= SkinEditorDocument.CellHeight)
+							continue;
+						SkinEditorColor color = floatingSelection.Pixels[y * floatingSelection.Width + x];
+						if (color.A == 0) continue;
+						Rectangle pixel = new(canvas.X + destinationX * zoom, canvas.Y + destinationY * zoom, zoom, zoom);
+						spriteBatch.Draw(TextureAssets.MagicPixel.Value, pixel, new Color(color.R, color.G, color.B, color.A));
+					}
+				}
+				DrawSelectionOutline(spriteBatch, canvas, zoom, floatingSelection.DestinationX, floatingSelection.DestinationY,
+					floatingSelection.Width, floatingSelection.Height, new Color(255, 214, 64));
+			}
+			else if (selecting)
+			{
+				int left = Math.Min(selectionStartX, selectionEndX);
+				int top = Math.Min(selectionStartY, selectionEndY);
+				int width = Math.Abs(selectionEndX - selectionStartX) + 1;
+				int height = Math.Abs(selectionEndY - selectionStartY) + 1;
+				DrawSelectionOutline(spriteBatch, canvas, zoom, left, top, width, height, Color.White);
+			}
+		}
+
+		private static void DrawSelectionOutline(SpriteBatch spriteBatch, Rectangle canvas, int zoom,
+			int x, int y, int width, int height, Color color)
+		{
+			Rectangle requested = new(canvas.X + x * zoom, canvas.Y + y * zoom, width * zoom, height * zoom);
+			Rectangle rectangle = Rectangle.Intersect(canvas, requested);
+			if (rectangle.Width <= 0 || rectangle.Height <= 0) return;
+			Texture2D pixel = TextureAssets.MagicPixel.Value;
+			spriteBatch.Draw(pixel, new Rectangle(rectangle.X, rectangle.Y, rectangle.Width, 2), color);
+			spriteBatch.Draw(pixel, new Rectangle(rectangle.X, rectangle.Bottom - 2, rectangle.Width, 2), color);
+			spriteBatch.Draw(pixel, new Rectangle(rectangle.X, rectangle.Y, 2, rectangle.Height), color);
+			spriteBatch.Draw(pixel, new Rectangle(rectangle.Right - 2, rectangle.Y, 2, rectangle.Height), color);
+		}
+
 		private void DrawLine(int fromX, int fromY, int toX, int toY, SkinEditorColor color)
 		{
 			if (fromX < 0 || fromY < 0)
@@ -1282,6 +2069,22 @@ namespace customskin.Common.UI
 			drawing = false;
 			lastPixelX = lastPixelY = -1;
 			if (document.CommitStroke()) changed();
+		}
+
+		private sealed class FloatingSelection
+		{
+			public required SkinEditorPart Part { get; init; }
+			public required SkinEditorPose SourcePose { get; init; }
+			public required SkinEditorGender Gender { get; init; }
+			public required bool SourceMirror { get; init; }
+			public required bool Move { get; init; }
+			public required int SourceX { get; init; }
+			public required int SourceY { get; init; }
+			public required int Width { get; init; }
+			public required int Height { get; init; }
+			public required SkinEditorColor[] Pixels { get; init; }
+			public int DestinationX { get; set; }
+			public int DestinationY { get; set; }
 		}
 	}
 }

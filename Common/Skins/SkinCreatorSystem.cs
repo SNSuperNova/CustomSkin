@@ -18,7 +18,7 @@ namespace customskin.Common.Skins
 	{
 		public required string DirectoryPath { get; init; }
 		public required string FolderName { get; init; }
-		public required string DisplayName { get; init; }
+		public required string DisplayName { get; set; }
 		public string? LastImportedHash { get; init; }
 		public string? ErrorCode { get; init; }
 		public string? ErrorMessage { get; init; }
@@ -33,6 +33,7 @@ namespace customskin.Common.Skins
 		public SkinEditorTool Tool { get; set; } = SkinEditorTool.Pencil;
 		public int Zoom { get; set; } = 8;
 		public bool ShowGrid { get; set; } = true;
+		public bool ShowBackground { get; set; } = true;
 		public bool MirrorPreview { get; set; }
 		public bool OnlySelectedPart { get; set; }
 		public byte ColorR { get; set; } = 255;
@@ -267,6 +268,33 @@ namespace customskin.Common.Skins
 			string temporary = path + ".tmp";
 			File.WriteAllBytes(temporary, JsonSerializer.SerializeToUtf8Bytes(settings, StateJsonOptions));
 			File.Move(temporary, path, overwrite: true);
+		}
+
+		public void RenameProject(SkinCreatorProject project, string requestedName)
+		{
+			EnsureProjectChild(project.DirectoryPath);
+			string name = (requestedName ?? string.Empty).Trim();
+			if (name.Length == 0 || name.Length > 80 || name.Any(char.IsControl))
+				throw new SkinPackageException("manifest.name", "Skin name must contain 1 to 80 visible characters.");
+			if (string.Equals(project.DisplayName, name, StringComparison.Ordinal))
+				return;
+
+			SkinProjectFiles files = SkinProjectPackage.Read(project.DirectoryPath);
+			files.Manifest.Name = name;
+			byte[] manifest = SkinManifestValidator.SerializeEditable(files.Manifest);
+			_ = SkinManifestValidator.ParseAndNormalize(manifest);
+			string path = Path.Combine(project.DirectoryPath, "manifest.json");
+			string temporary = path + $".{Guid.NewGuid():N}.tmp";
+			try
+			{
+				File.WriteAllBytes(temporary, manifest);
+				File.Move(temporary, path, overwrite: true);
+				project.DisplayName = name;
+			}
+			finally
+			{
+				if (File.Exists(temporary)) File.Delete(temporary);
+			}
 		}
 
 		public string GetReferenceDirectory(SkinCreatorProject project)

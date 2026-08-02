@@ -29,7 +29,9 @@ namespace customskin.Common.Skins
 	{
 		Pencil,
 		Eraser,
-		Eyedropper
+		Eyedropper,
+		RectangleMove,
+		RectangleCopy
 	}
 
 	public readonly record struct SkinEditorColor(byte R, byte G, byte B, byte A)
@@ -213,6 +215,33 @@ namespace customskin.Common.Skins
 			return ReadColor(atlas, ((originY + y) * atlasWidth + originX + x) * 4);
 		}
 
+		public bool CopyPartToPose(SkinEditorPart part, SkinEditorPose sourcePose, SkinEditorPose targetPose, SkinEditorGender gender)
+		{
+			Target source = ResolveTarget(part, sourcePose, gender);
+			Target target = ResolveTarget(part, targetPose, gender);
+			if (source == target)
+				return false;
+			if (source.Atlas != target.Atlas)
+				throw new InvalidOperationException("A skin part cannot change atlas between poses.");
+
+			SkinEditorColor[] sourcePixels = new SkinEditorColor[CellWidth * CellHeight];
+			byte[] atlas = GetAtlas(source.Atlas);
+			(int atlasWidth, int sourceX, int sourceY) = GetCellLocation(source.Atlas, source.Slot);
+			for (int y = 0; y < CellHeight; y++)
+			{
+				for (int x = 0; x < CellWidth; x++)
+					sourcePixels[y * CellWidth + x] = ReadColor(atlas, ((sourceY + y) * atlasWidth + sourceX + x) * 4);
+			}
+
+			BeginStroke(part, targetPose, gender);
+			for (int y = 0; y < CellHeight; y++)
+			{
+				for (int x = 0; x < CellWidth; x++)
+					ApplyPixel(x, y, sourcePixels[y * CellWidth + x]);
+			}
+			return CommitStroke();
+		}
+
 		public bool ApplyReference(SkinEditorPart part, SkinEditorPose pose, SkinEditorGender gender,
 			SkinReferenceImage reference, int offsetX, int offsetY, bool referenceMirror, bool previewMirror, bool replace)
 		{
@@ -243,6 +272,65 @@ namespace customskin.Common.Skins
 
 					if (reference.TryReadCanvasPixel(visualX, visualY, offsetX, offsetY, referenceMirror, out SkinEditorColor source) && source.A > 0)
 						ApplyPixel(targetX, visualY, source);
+				}
+			}
+			return CommitStroke();
+		}
+
+		public bool ApplyFloatingSelection(SkinEditorPart part, SkinEditorPose sourcePose, SkinEditorPose targetPose,
+			SkinEditorGender gender, int sourceX, int sourceY, int width, int height,
+			IReadOnlyList<SkinEditorColor> pixels, int destinationX, int destinationY,
+			bool sourceMirror, bool targetMirror, bool move)
+		{
+			ArgumentNullException.ThrowIfNull(pixels);
+			if (width <= 0 || height <= 0 || pixels.Count != checked(width * height))
+				throw new ArgumentException("Floating selection dimensions do not match its pixels.", nameof(pixels));
+
+			CommitStroke();
+			Target source = ResolveTarget(part, sourcePose, gender);
+			Target target = ResolveTarget(part, targetPose, gender);
+			if (source.Atlas != target.Atlas)
+				throw new InvalidOperationException("A floating selection cannot change texture atlases.");
+			activeStroke = new StrokeBuilder(source.Atlas, source.Slot);
+			activeTargets = Array.Empty<Target>();
+
+			Target sourceCounterpart = ResolveTarget(part, sourcePose,
+				gender == SkinEditorGender.Male ? SkinEditorGender.Female : SkinEditorGender.Male);
+			Target targetCounterpart = ResolveTarget(part, targetPose,
+				gender == SkinEditorGender.Male ? SkinEditorGender.Female : SkinEditorGender.Male);
+			Target[] sourceTargets = sourceCounterpart == source ? new[] { source } : new[] { source, sourceCounterpart };
+			Target[] targetTargets = targetCounterpart == target ? new[] { target } : new[] { target, targetCounterpart };
+
+			if (move)
+			{
+				foreach (Target sourceTarget in sourceTargets.Distinct())
+				{
+					for (int y = 0; y < height; y++)
+					{
+						for (int x = 0; x < width; x++)
+						{
+							SkinEditorColor selected = pixels[y * width + x];
+							if (selected.A == 0) continue;
+							int visualX = sourceX + x;
+							int atlasX = sourceMirror ? CellWidth - 1 - visualX : visualX;
+							ApplyRawPixel(sourceTarget, atlasX, sourceY + y, SkinEditorColor.Transparent);
+						}
+					}
+				}
+			}
+
+			foreach (Target targetCell in targetTargets.Distinct())
+			{
+				for (int y = 0; y < height; y++)
+				{
+					for (int x = 0; x < width; x++)
+					{
+						SkinEditorColor selected = pixels[y * width + x];
+						if (selected.A == 0) continue;
+						int visualX = destinationX + x;
+						int atlasX = targetMirror ? CellWidth - 1 - visualX : visualX;
+						ApplyRawPixel(targetCell, atlasX, destinationY + y, selected);
+					}
 				}
 			}
 			return CommitStroke();
@@ -308,6 +396,16 @@ namespace customskin.Common.Skins
 
 		public int GetSlot(SkinEditorPart part, SkinEditorPose pose, SkinEditorGender gender)
 			=> ResolveTarget(part, pose, gender).Slot;
+
+		internal static int GetAtlasSlot(SkinEditorPart part, SkinEditorPose pose, SkinEditorGender gender)
+			=> ResolveTarget(part, pose, gender).Slot;
+
+		internal static bool IsShoulderOverFrontArm(SkinEditorPose pose)
+		{
+			if ((uint)pose.BodyFrame >= ShoulderOverFrontArm.Length)
+				throw new ArgumentOutOfRangeException(nameof(pose));
+			return ShoulderOverFrontArm[pose.BodyFrame];
+		}
 
 		public string GetAffectedPoseSummary(SkinEditorPart part, SkinEditorPose pose, SkinEditorGender gender)
 		{
@@ -400,7 +498,7 @@ namespace customskin.Common.Skins
 			return poses;
 		}
 
-		private Target ResolveTarget(SkinEditorPart part, SkinEditorPose pose, SkinEditorGender gender)
+		private static Target ResolveTarget(SkinEditorPart part, SkinEditorPose pose, SkinEditorGender gender)
 		{
 			if ((uint)pose.BodyFrame >= 20 || (uint)pose.LegFrame >= 20)
 				throw new ArgumentOutOfRangeException(nameof(pose));
@@ -524,6 +622,24 @@ namespace customskin.Common.Skins
 			atlas[offset + 1] = color.G;
 			atlas[offset + 2] = color.B;
 			atlas[offset + 3] = color.A;
+		}
+
+		private bool ApplyRawPixel(Target target, int x, int y, SkinEditorColor color)
+		{
+			if (activeStroke == null)
+				throw new InvalidOperationException("A floating-selection stroke is not active.");
+			if ((uint)x >= CellWidth || (uint)y >= CellHeight)
+				return false;
+			byte[] atlas = GetAtlas(target.Atlas);
+			(int atlasWidth, int originX, int originY) = GetCellLocation(target.Atlas, target.Slot);
+			int offset = ((originY + y) * atlasWidth + originX + x) * 4;
+			SkinEditorColor before = ReadColor(atlas, offset);
+			if (before == color)
+				return false;
+			activeStroke.Record(offset, before, color);
+			WriteColor(atlas, offset, color);
+			contentRevision++;
+			return true;
 		}
 
 		private static void ValidateAtlas(byte[] pixels, int width, int height, string name)

@@ -107,7 +107,12 @@ UI: {
 	DeleteProject: Projekt löschen
 	OpenPixelEditor: Pixel-Editor
 	PixelEditorTitle: CustomSkin Pixel-Editor · {0}
+	// PixelEditorHeading: CustomSkin Pixel Editor ·
+	// EditorProjectNameHint: Skin name
+	// EditorProjectRenamed: Skin name changed to: {0}
+	// EditorProjectRenameFailed: Could not change the name: {0}
 	EditorHint: Wählen Sie eine Pose und eine Komponente aus und zeichnen Sie dann Pixel auf das komponierte Zeichen. Mausrad zoomt; Ctrl+Z/Y rückgängig/wiederherstellen; Ctrl+S speichert.
+	// EditorOperationHint: Wheel: zoom canvas · Arrow keys: move reference 1 px · Shift+Arrow: move 5 px · Ctrl+Z/Y: undo/redo · Ctrl+S: save
 	EditorPlayPause: Wiedergabe/Pause
 	EditorGender: Gehäusetyp
 	// EditorSynchronizedBody: Unisex Sync
@@ -115,7 +120,18 @@ UI: {
 	EditorMirror: Spiegel
 	EditorOnlyPart: Einzelteil
 	EditorGrid: Pixelraster
+	// EditorHideBackground: Hide BG
 	// EditorZoomHint: Scroll to zoom canvas
+	// EditorCopyPrevious: Copy to Previous
+	// EditorCopyNext: Copy to Next
+	// EditorPreviousFrame: previous
+	// EditorNextFrame: next
+	// EditorCopyUnavailable: The current animation group has no {0} frame to copy to.
+	// EditorCopiedPart: Copied {0} from {1} to {2} and selected the target frame.
+	// EditorCopyShared: The selected part {0} shares the same atlas cell in {1} and {2}, so no copy was needed; the target frame is selected.
+	// EditorCopyUnchanged: The selected part {0} already has identical content in {1}; the target frame is selected.
+	// EditorFrameCompatibility: Compat {0}
+	// EditorFrameMount: Mount
 	EditorUndo: Rückgängig machen
 	EditorRedo: Wiederherstellen
 	EditorSave: Speichern
@@ -128,6 +144,7 @@ UI: {
 	EditorFailed: Editor-Aktion fehlgeschlagen. Code: {0}  Detail: {1}. Das ursprüngliche Projekt wurde nicht absichtlich umgangen oder herabgestuft.
 	EditorPose: Pose: {0} ({1}/{2}) · {3} · Verblendung {4}
 	// EditorPoseNoGender: Pose: {0} ({1}/{2}) · facing {3}
+	// EditorPoseInGroup: Group: {0} · Current: {1} ({2}/{3}) · facing {4}
 	EditorSlots: Tatsächliche Steckplätze: Head {0} / Torso {1} / Frontarm {2} / Backarm {3} / Legs {4}
 	EditorAffected: Ausgewählt: {0} Steckplatz {1} · beeinflusst {2} Posen: {3}
 	EditorColor: Aktuell RGBA: {0}, {1}, {2}, {3}
@@ -143,6 +160,13 @@ UI: {
 	EditorReferenceDialogTitle: Statisches PNG-Referenzbild auswählen
 	EditorReferenceReload: PNG neu laden
 	EditorReferenceVisible: Referenz anzeigen
+	// EditorSelectionConfirm: Confirm Selection
+	// EditorSelectionCancel: Cancel Selection
+	// EditorSelectionReady: Selection is floating above the canvas. Switch frames or reposition it, then press Enter or Confirm Selection; press Esc to cancel.
+	// EditorSelectionResolveFirst: Confirm or cancel the floating selection first.
+	// EditorSelectionCommitted: The floating selection was applied as one undoable edit.
+	// EditorSelectionUnchanged: The floating selection did not change any pixels.
+	// EditorSelectionCancelled: The floating selection was cancelled without changing the skin.
 	EditorReferenceOpacityDown: Deckkraft −
 	EditorReferenceOpacityUp: Deckkraft +
 	EditorReferenceMirror: PNG spiegeln
@@ -181,6 +205,8 @@ UI: {
 		Pencil: Bleistift
 		Eraser: Radierer
 		Eyedropper: Pipette
+		// RectangleMove: Rectangle Move
+		// RectangleCopy: Rectangle Copy
 	}
 
 	EditorPoses: {
@@ -190,6 +216,8 @@ UI: {
 		GroundMove: Ground Move {0}
 		WeaponArm: Waffenarm {0}
 		NativeLegs: Native Spezial-/Übergangsbeine {0}
+		// CompatibilityLegs: Compatibility leg slot {0} (not used by normal vanilla movement; available to special equipment or other mods)
+		// MountLegs: Mount/Riding (used while riding a mount)
 	}
 
 	EditorStates: {
@@ -220,7 +248,7 @@ UI: {
 	ProjectFolderOpened: Erstellerordner geöffnet: {0}
 	ProjectRefreshed: Bilder neu geladen und auf das aktuelle Zeichen angewendet: {0}
 	ProjectExported: Freigabepaket exportiert und Exportordner geöffnet: {0}
-	ConfirmDeleteProject: Klicken Sie erneut auf Projekt löschen, um "{0}" in den wiederherstellbaren CreatorTrash-Ordner zu verschieben. Die installierte Bibliothekskopie wird nicht gelöscht.
+	ConfirmDeleteProject: Klicken Sie erneut auf Projekt löschen, um „{0}“ in den wiederherstellbaren CreatorTrash-Ordner zu verschieben. Die installierte Bibliothekskopie wird nicht gelöscht.
 	ProjectDeleted: Creator-Projekt „{0}“ wurde in CreatorTrash: {1} verschoben. Sein installierter Skin bleibt im Skin-Manager verfügbar.
 	ProjectFailed:
 		'''
@@ -249,10 +277,10 @@ UI: {
 	Restore: Wiederherstellen
 	PermanentDelete: Für immer löschen
 	Selected: Ausgewählte Haut: {0}
-	ConfirmDelete: Klicken Sie erneut auf Löschen, um "{0}" in den wiederherstellbaren Papierkorb zu verschieben.
+	ConfirmDelete: Klicken Sie erneut auf Löschen, um „{0}“ in den wiederherstellbaren Papierkorb zu verschieben.
 	Deleted: Aus Bibliothek entfernt: {0}
 	Restored: In Bibliothek wiederhergestellt: {0}
-	ConfirmPermanentDelete: Klicken Sie erneut auf Für immer löschen, um "{0}" dauerhaft zu entfernen. Dies kann nicht rückgängig gemacht werden.
+	ConfirmPermanentDelete: Klicken Sie erneut auf Für immer löschen, um „{0}“ dauerhaft zu entfernen. Dies kann nicht rückgängig gemacht werden.
 	PermanentlyDeleted: Dauerhaft gelöscht: {0}
 	NoPackages: Es wurden keine .cskin-Pakete in {0} gefunden
 	ImportFailed:

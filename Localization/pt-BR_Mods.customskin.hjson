@@ -107,7 +107,12 @@ UI: {
 	DeleteProject: Excluir projeto
 	OpenPixelEditor: Editor de pixels
 	PixelEditorTitle: Editor de pixels CustomSkin · {0}
+	// PixelEditorHeading: CustomSkin Pixel Editor ·
+	// EditorProjectNameHint: Skin name
+	// EditorProjectRenamed: Skin name changed to: {0}
+	// EditorProjectRenameFailed: Could not change the name: {0}
 	EditorHint: Selecione uma pose e uma parte, depois desenhe pixels no personagem composto. A roda ajusta o zoom; Ctrl+Z/Y desfaz/refaz; Ctrl+S salva.
+	// EditorOperationHint: Wheel: zoom canvas · Arrow keys: move reference 1 px · Shift+Arrow: move 5 px · Ctrl+Z/Y: undo/redo · Ctrl+S: save
 	EditorPlayPause: Reproduzir/Pausar
 	EditorGender: Tipo de corpo
 	// EditorSynchronizedBody: Unisex Sync
@@ -115,7 +120,18 @@ UI: {
 	EditorMirror: Espelhar
 	EditorOnlyPart: Somente a parte
 	EditorGrid: Grade de pixels
+	// EditorHideBackground: Hide BG
 	// EditorZoomHint: Scroll to zoom canvas
+	// EditorCopyPrevious: Copy to Previous
+	// EditorCopyNext: Copy to Next
+	// EditorPreviousFrame: previous
+	// EditorNextFrame: next
+	// EditorCopyUnavailable: The current animation group has no {0} frame to copy to.
+	// EditorCopiedPart: Copied {0} from {1} to {2} and selected the target frame.
+	// EditorCopyShared: The selected part {0} shares the same atlas cell in {1} and {2}, so no copy was needed; the target frame is selected.
+	// EditorCopyUnchanged: The selected part {0} already has identical content in {1}; the target frame is selected.
+	// EditorFrameCompatibility: Compat {0}
+	// EditorFrameMount: Mount
 	EditorUndo: Desfazer
 	EditorRedo: Refazer
 	EditorSave: Salvar
@@ -128,6 +144,7 @@ UI: {
 	EditorFailed: A ação do editor falhou. Código: {0}  Detalhe: {1}. O projeto original não foi ignorado nem rebaixado intencionalmente.
 	EditorPose: Pose: {0} ({1}/{2}) · {3} · olhando para {4}
 	// EditorPoseNoGender: Pose: {0} ({1}/{2}) · facing {3}
+	// EditorPoseInGroup: Group: {0} · Current: {1} ({2}/{3}) · facing {4}
 	EditorSlots: Células reais: Cabeça {0} / Tronco {1} / Braço frontal {2} / Braço traseiro {3} / Pernas {4}
 	EditorAffected: Seleção: {0}, célula {1} · afeta {2} poses: {3}
 	EditorColor: RGBA atual: {0}, {1}, {2}, {3}
@@ -143,6 +160,13 @@ UI: {
 	EditorReferenceDialogTitle: Selecione uma imagem PNG estática de referência
 	EditorReferenceReload: Recarregar PNG
 	EditorReferenceVisible: Mostrar referência
+	// EditorSelectionConfirm: Confirm Selection
+	// EditorSelectionCancel: Cancel Selection
+	// EditorSelectionReady: Selection is floating above the canvas. Switch frames or reposition it, then press Enter or Confirm Selection; press Esc to cancel.
+	// EditorSelectionResolveFirst: Confirm or cancel the floating selection first.
+	// EditorSelectionCommitted: The floating selection was applied as one undoable edit.
+	// EditorSelectionUnchanged: The floating selection did not change any pixels.
+	// EditorSelectionCancelled: The floating selection was cancelled without changing the skin.
 	EditorReferenceOpacityDown: Opacidade −
 	EditorReferenceOpacityUp: Opacidade +
 	EditorReferenceMirror: Espelhar PNG
@@ -181,6 +205,8 @@ UI: {
 		Pencil: Lápis
 		Eraser: Borracha
 		Eyedropper: Conta-gotas
+		// RectangleMove: Rectangle Move
+		// RectangleCopy: Rectangle Copy
 	}
 
 	EditorPoses: {
@@ -190,6 +216,8 @@ UI: {
 		GroundMove: Movimento no chão {0}
 		WeaponArm: Braço com arma {0}
 		NativeLegs: Pernas nativas especiais/de transição {0}
+		// CompatibilityLegs: Compatibility leg slot {0} (not used by normal vanilla movement; available to special equipment or other mods)
+		// MountLegs: Mount/Riding (used while riding a mount)
 	}
 
 	EditorStates: {

@@ -94,15 +94,19 @@ try
 		("import error hint routing", TestImportErrorHintRouting),
 		("import error display sanitization", TestImportErrorDisplaySanitization),
 		("Chinese/English localization key and placeholder parity", TestLocalizationParity),
+		("localization unquoted value syntax guard", TestLocalizationUnquotedValueSyntax),
 		("composite body atlas registration contract", TestCompositeBodyAtlasRegistration),
 		("creator project deterministic export", TestCreatorProjectDeterministicExport),
 		("creator project rejects wrong PNG", TestCreatorProjectRejectsWrongPng),
 		("editor stroke undo redo", TestEditorStrokeUndoRedo),
+		("editor selected part copy", TestEditorSelectedPartCopy),
 		("editor gender-specific cells synchronize", TestEditorGenderSynchronization),
 		("editor pose composition and mirror", TestEditorPoseCompositionAndMirror),
 		("editor selected part composition", TestEditorSelectedPartComposition),
 		("editor reference crop mirror and undo", TestEditorReferenceCropMirrorAndUndo),
 		("editor reference overlay isolation", TestEditorReferenceOverlayIsolation),
+		("editor floating selection cross-frame copy", TestEditorFloatingSelectionCopy),
+		("editor floating selection move crop and undo", TestEditorFloatingSelectionMove),
 		("editor shared slot reporting", TestEditorSharedSlotReporting),
 		("editor undo history bounded", TestEditorUndoHistoryBounded),
 		("editor PNG encoding", TestEditorPngEncoding)
@@ -406,6 +410,37 @@ void TestLocalizationParity()
 		throw new InvalidOperationException("Simplified Chinese localization key/placeholder shape differs from English.");
 }
 
+void TestLocalizationUnquotedValueSyntax()
+{
+	string localization = Path.Combine(root, "Localization");
+	foreach (string path in Directory.EnumerateFiles(localization, "*.hjson", SearchOption.TopDirectoryOnly))
+	{
+		int lineNumber = 0;
+		bool inTripleQuotedValue = false;
+		foreach (string line in File.ReadLines(path, Encoding.UTF8))
+		{
+			lineNumber++;
+			if (System.Text.RegularExpressions.Regex.Matches(line, "'''").Count % 2 == 1)
+			{
+				inTripleQuotedValue = !inTripleQuotedValue;
+				continue;
+			}
+			if (inTripleQuotedValue)
+				continue;
+			int separator = line.IndexOf(':');
+			if (separator < 0)
+				continue;
+			string value = line[(separator + 1)..].TrimStart();
+			if (value.Length == 0 || value.StartsWith('"') || value.StartsWith("'''", StringComparison.Ordinal))
+				continue;
+			if (System.Text.RegularExpressions.Regex.IsMatch(value, "^\\{\\d+\\}"))
+				throw new InvalidOperationException($"Unquoted HJSON value starts with a placeholder that can be parsed as an object: {Path.GetFileName(path)}:{lineNumber}");
+			if (value.Contains('"'))
+				throw new InvalidOperationException($"Unquoted HJSON value contains an unsafe ASCII quote: {Path.GetFileName(path)}:{lineNumber}");
+		}
+	}
+}
+
 void TestCompositeBodyAtlasRegistration()
 {
 	string templateSource = File.ReadAllText(Path.Combine(root, "Content", "Rendering", "SkinTemplateSystem.cs"), Encoding.UTF8);
@@ -503,6 +538,30 @@ void TestEditorStrokeUndoRedo()
 	editor.MarkSaved();
 	if (editor.IsDirty)
 		throw new InvalidOperationException("Editor remained dirty after marking the current revision saved.");
+}
+
+void TestEditorSelectedPartCopy()
+{
+	SkinEditorDocument editor = CreateEmptyEditor();
+	SkinEditorPose source = SkinEditorDocument.Poses.Single(pose => pose.Name == "Body Action 1");
+	SkinEditorPose target = SkinEditorDocument.Poses.Single(pose => pose.Name == "Body Action 2");
+	SkinEditorColor sourceColor = new(220, 30, 40, 255);
+	SkinEditorColor targetColor = new(20, 80, 230, 255);
+
+	editor.BeginStroke(SkinEditorPart.Head, source, SkinEditorGender.Male);
+	editor.ApplyPixel(4, 5, sourceColor);
+	editor.CommitStroke();
+	editor.BeginStroke(SkinEditorPart.Head, target, SkinEditorGender.Male);
+	editor.ApplyPixel(4, 5, targetColor);
+	editor.CommitStroke();
+
+	if (!editor.CopyPartToPose(SkinEditorPart.Head, source, target, SkinEditorGender.Male) ||
+		editor.ReadTargetPixel(SkinEditorPart.Head, target, SkinEditorGender.Male, 4, 5) != sourceColor)
+		throw new InvalidOperationException("Selected part was not copied to the target pose.");
+	if (editor.ReadTargetPixel(SkinEditorPart.Legs, target, SkinEditorGender.Male, 4, 5).A != 0)
+		throw new InvalidOperationException("Copying the selected part changed another atlas part.");
+	if (!editor.Undo() || editor.ReadTargetPixel(SkinEditorPart.Head, target, SkinEditorGender.Male, 4, 5) != targetColor)
+		throw new InvalidOperationException("Selected-part copy was not undoable as one stroke.");
 }
 
 void TestEditorGenderSynchronization()
@@ -622,6 +681,61 @@ void TestEditorReferenceOverlayIsolation()
 		offsetX: 200, offsetY: 200, referenceMirror: false, previewMirror: false, replace: true) ||
 		editor.ReadTargetPixel(SkinEditorPart.Head, idle, SkinEditorGender.Male, 1, 1) != replacement)
 		throw new InvalidOperationException("An empty cropped reference area cleared the selected component.");
+}
+
+void TestEditorFloatingSelectionCopy()
+{
+	SkinEditorDocument editor = CreateEmptyEditor();
+	SkinEditorPose source = SkinEditorDocument.Poses.Single(pose => pose.Name == "Body Action 1");
+	SkinEditorPose target = SkinEditorDocument.Poses.Single(pose => pose.Name == "Body Action 2");
+	SkinEditorColor red = new(230, 40, 50, 255);
+	SkinEditorColor green = new(30, 210, 90, 255);
+	SkinEditorColor preserved = new(20, 80, 230, 255);
+	editor.BeginStroke(SkinEditorPart.Head, target, SkinEditorGender.Male);
+	editor.ApplyPixel(39, 8, preserved);
+	editor.CommitStroke();
+	editor.MarkSaved();
+
+	SkinEditorColor[] selection = { red, SkinEditorColor.Transparent, green };
+	if (!editor.ApplyFloatingSelection(SkinEditorPart.Head, source, target, SkinEditorGender.Male,
+		sourceX: 2, sourceY: 4, width: 3, height: 1, pixels: selection,
+		destinationX: 38, destinationY: 8, sourceMirror: false, targetMirror: false, move: false))
+		throw new InvalidOperationException("Cross-frame floating copy did not create a stroke.");
+	if (editor.ReadTargetPixel(SkinEditorPart.Head, target, SkinEditorGender.Male, 38, 8) != red ||
+		editor.ReadTargetPixel(SkinEditorPart.Head, target, SkinEditorGender.Male, 39, 8) != preserved)
+		throw new InvalidOperationException("Floating copy did not preserve transparent targets or crop the right edge.");
+	if (editor.ReadTargetPixel(SkinEditorPart.Head, source, SkinEditorGender.Male, 2, 4).A != 0)
+		throw new InvalidOperationException("Floating copy modified its source frame.");
+	if (!editor.Undo() || editor.ReadTargetPixel(SkinEditorPart.Head, target, SkinEditorGender.Male, 38, 8).A != 0 ||
+		editor.ReadTargetPixel(SkinEditorPart.Head, target, SkinEditorGender.Male, 39, 8) != preserved)
+		throw new InvalidOperationException("Floating copy was not undone as one stroke.");
+}
+
+void TestEditorFloatingSelectionMove()
+{
+	SkinEditorDocument editor = CreateEmptyEditor();
+	SkinEditorPose idle = SkinEditorDocument.Poses[0];
+	SkinEditorColor red = new(230, 40, 50, 255);
+	SkinEditorColor green = new(30, 210, 90, 255);
+	editor.BeginStroke(SkinEditorPart.Head, idle, SkinEditorGender.Male);
+	editor.ApplyPixel(1, 3, red);
+	editor.ApplyPixel(3, 3, green);
+	editor.CommitStroke();
+	editor.MarkSaved();
+
+	SkinEditorColor[] selection = { red, SkinEditorColor.Transparent, green };
+	if (!editor.ApplyFloatingSelection(SkinEditorPart.Head, idle, idle, SkinEditorGender.Male,
+		sourceX: 1, sourceY: 3, width: 3, height: 1, pixels: selection,
+		destinationX: 39, destinationY: 5, sourceMirror: false, targetMirror: false, move: true))
+		throw new InvalidOperationException("Floating move did not create a stroke.");
+	if (editor.ReadTargetPixel(SkinEditorPart.Head, idle, SkinEditorGender.Male, 1, 3).A != 0 ||
+		editor.ReadTargetPixel(SkinEditorPart.Head, idle, SkinEditorGender.Male, 3, 3).A != 0 ||
+		editor.ReadTargetPixel(SkinEditorPart.Head, idle, SkinEditorGender.Male, 39, 5) != red)
+		throw new InvalidOperationException("Floating move did not clear opaque source pixels or crop its destination.");
+	if (!editor.Undo() || editor.ReadTargetPixel(SkinEditorPart.Head, idle, SkinEditorGender.Male, 1, 3) != red ||
+		editor.ReadTargetPixel(SkinEditorPart.Head, idle, SkinEditorGender.Male, 3, 3) != green ||
+		editor.ReadTargetPixel(SkinEditorPart.Head, idle, SkinEditorGender.Male, 39, 5).A != 0)
+		throw new InvalidOperationException("Floating move was not undone as one stroke.");
 }
 
 void TestEditorSharedSlotReporting()

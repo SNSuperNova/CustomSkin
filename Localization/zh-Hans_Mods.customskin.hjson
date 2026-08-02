@@ -107,7 +107,12 @@ UI: {
 	DeleteProject: 删除工程
 	OpenPixelEditor: 游戏内画板
 	PixelEditorTitle: CustomSkin 像素画板 · {0}
-	EditorHint: 在完整人物预览中选择动作和部件后逐像素绘制。滚轮缩放；Ctrl+Z/Y 撤销/重做；Ctrl+S 保存。
+	PixelEditorHeading: CustomSkin 像素画板 ·
+	EditorProjectNameHint: 皮肤名称
+	EditorProjectRenamed: 皮肤名称已修改为：{0}
+	EditorProjectRenameFailed: 名称修改失败：{0}
+	EditorHint: 先选择动画组、帧和部位，再在完整人物预览中逐像素绘制。
+	EditorOperationHint: 滚轮：缩放画布 · 方向键：移动参考图 1 像素 · Shift+方向键：移动 5 像素 · Ctrl+Z/Y：撤销/重做 · Ctrl+S：保存
 	EditorPlayPause: 播放/暂停
 	EditorGender: 男/女躯干
 	EditorSynchronizedBody: 男女同步
@@ -115,7 +120,18 @@ UI: {
 	EditorMirror: 左右镜像
 	EditorOnlyPart: 仅看部位
 	EditorGrid: 像素网格
+	EditorHideBackground: 隐藏背景
 	EditorZoomHint: 滚轮缩放画布
+	EditorCopyPrevious: 复制到上一帧
+	EditorCopyNext: 复制到下一帧
+	EditorPreviousFrame: 上一
+	EditorNextFrame: 下一
+	EditorCopyUnavailable: 当前动画组没有{0}帧可复制。
+	EditorCopiedPart: 已将“{0}”从“{1}”复制到“{2}”，并切换到目标帧。
+	EditorCopyShared: “{0}”在“{1}”和“{2}”中共用同一贴图格，无需复制；已切换到目标帧。
+	EditorCopyUnchanged: “{0}”与“{1}”中的现有内容相同；已切换到目标帧。
+	EditorFrameCompatibility: 兼容格{0}
+	EditorFrameMount: 坐骑
 	EditorUndo: 撤销
 	EditorRedo: 重做
 	EditorSave: 保存工程
@@ -128,6 +144,7 @@ UI: {
 	EditorFailed: 画板操作失败。代码：{0}　详情：{1}。原工程文件未被故意绕过或降级处理。
 	EditorPose: 动作：{0}（{1}/{2}） · {3} · 朝{4}
 	EditorPoseNoGender: 动作：{0}（{1}/{2}） · 朝{3}
+	EditorPoseInGroup: 动画组：{0} · 当前：{1}（{2}/{3}） · 朝{4}
 	EditorSlots: 实际格号：Head {0} / Torso {1} / FrontArm {2} / BackArm {3} / Legs {4}
 	EditorAffected: 当前部件：{0} 格 {1} · 影响 {2} 个动作：{3}
 	EditorColor: 当前 RGBA：{0}, {1}, {2}, {3}
@@ -143,6 +160,13 @@ UI: {
 	EditorReferenceDialogTitle: 选择静态 PNG 参考图
 	EditorReferenceReload: 重新载入
 	EditorReferenceVisible: 显示参考图
+	EditorSelectionConfirm: 确定选区
+	EditorSelectionCancel: 取消选区
+	EditorSelectionReady: 选区正在画布上方悬浮。可以切换动画帧或移动位置，然后按 Enter 或“确定选区”生效；按 Esc 取消。
+	EditorSelectionResolveFirst: 请先确定或取消当前悬浮选区。
+	EditorSelectionCommitted: 悬浮选区已作为一次可撤销操作写入皮肤。
+	EditorSelectionUnchanged: 悬浮选区没有改变任何像素。
+	EditorSelectionCancelled: 已取消悬浮选区，皮肤内容没有改变。
 	EditorReferenceOpacityDown: 透明度 −
 	EditorReferenceOpacityUp: 透明度 +
 	EditorReferenceMirror: 镜像参考图
@@ -181,6 +205,8 @@ UI: {
 		Pencil: 铅笔
 		Eraser: 橡皮
 		Eyedropper: 吸管
+		RectangleMove: 矩形移动
+		RectangleCopy: 矩形复制
 	}
 
 	EditorPoses: {
@@ -190,6 +216,8 @@ UI: {
 		GroundMove: 地面移动 {0}
 		WeaponArm: 武器手臂 {0}
 		NativeLegs: 原生特殊/过渡腿 {0}
+		CompatibilityLegs: 兼容保留腿格 {0}（原版常规动作不使用，供特殊装备或其他 Mod 调用）
+		MountLegs: 坐骑/骑乘（乘坐坐骑时使用）
 	}
 
 	EditorStates: {
@@ -198,7 +226,7 @@ UI: {
 		JumpAir: 跳跃/空中
 		GroundMove: 地面移动
 		WeaponArm: 武器手臂
-		NativeSpecial: 原生特殊腿
+		NativeSpecial: 特殊/兼容腿
 	}
 
 	CreatorHint: 点击“创建模板”会生成并打开可编辑目录：{0}

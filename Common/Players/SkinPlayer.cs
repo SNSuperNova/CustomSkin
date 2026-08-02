@@ -72,11 +72,11 @@ namespace customskin.Common.Players
 			{
 				ApplyTemplateSlots();
 				if (IsManagerPreview)
-					ApplyPreviewAnimationFrame(drawInfo.drawPlayer);
+					ApplyPreviewAnimationFrame(ref drawInfo);
 			}
 		}
 
-		private static void ApplyPreviewAnimationFrame(Player previewPlayer)
+		private static void ApplyPreviewAnimationFrame(ref PlayerDrawSet drawInfo)
 		{
 			// Terraria runs at 60 updates per second. Six ticks per displayed pose
 			// gives the preview the same 10 FPS cadence used by the normal player
@@ -85,9 +85,23 @@ namespace customskin.Common.Players
 			const int ticksPerPose = 6;
 			IReadOnlyList<SkinEditorPose> poses = SkinEditorDocument.Poses;
 			SkinEditorPose pose = poses[(int)((Main.GameUpdateCount / ticksPerPose) % (ulong)poses.Count)];
+			Player previewPlayer = drawInfo.drawPlayer;
 
 			previewPlayer.bodyFrame.Y = pose.BodyFrame * previewPlayer.bodyFrame.Height;
 			previewPlayer.legFrame.Y = pose.LegFrame * previewPlayer.legFrame.Height;
+
+			// PlayerDrawSet.CreateCompositeData runs before ModifyDrawInfo and has
+			// already cached the torso, shoulders, and arm source rectangles. Updating
+			// Player.bodyFrame alone therefore cannot animate composite armor in a
+			// UICharacter preview. Drive those cached rectangles from the same frozen
+			// authoring contract so every visible pose actually reaches the renderer.
+			SkinEditorGender gender = previewPlayer.Male ? SkinEditorGender.Male : SkinEditorGender.Female;
+			drawInfo.compTorsoFrame = CompositeBodyFrame(SkinEditorDocument.GetAtlasSlot(SkinEditorPart.Torso, pose, gender));
+			drawInfo.compFrontShoulderFrame = CompositeBodyFrame(SkinEditorDocument.GetAtlasSlot(SkinEditorPart.FrontShoulder, pose, gender));
+			drawInfo.compBackShoulderFrame = CompositeBodyFrame(SkinEditorDocument.GetAtlasSlot(SkinEditorPart.BackShoulder, pose, gender));
+			drawInfo.compFrontArmFrame = CompositeBodyFrame(SkinEditorDocument.GetAtlasSlot(SkinEditorPart.FrontArm, pose, gender));
+			drawInfo.compBackArmFrame = CompositeBodyFrame(SkinEditorDocument.GetAtlasSlot(SkinEditorPart.BackArm, pose, gender));
+			drawInfo.compShoulderOverFrontArm = SkinEditorDocument.IsShoulderOverFrontArm(pose);
 
 			// Clear any composite-arm state left on UICharacter's cloned player,
 			// then explicitly exercise all four weapon arm atlas poses as the full
@@ -105,8 +119,14 @@ namespace customskin.Common.Players
 				};
 				previewPlayer.SetCompositeArmFront(true, stretch, 0f);
 				previewPlayer.SetCompositeArmBack(true, stretch, 0f);
+				drawInfo.compositeFrontArmRotation = 0f;
+				drawInfo.compositeBackArmRotation = 0f;
 			}
 		}
+
+		private static Rectangle CompositeBodyFrame(int slot)
+			=> new((slot % 9) * SkinEditorDocument.CellWidth, (slot / 9) * SkinEditorDocument.CellHeight,
+				SkinEditorDocument.CellWidth, SkinEditorDocument.CellHeight);
 
 		public override void TransformDrawData(ref PlayerDrawSet drawInfo)
 		{
